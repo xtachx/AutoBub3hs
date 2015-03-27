@@ -13,3 +13,4 @@ testbed/*
 *.db
 core.*
 checkrun
+*.so
