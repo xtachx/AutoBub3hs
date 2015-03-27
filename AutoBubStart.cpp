@@ -170,10 +170,14 @@ void SearchForBubbleInFrame( std::vector<std::string> SortedFileList, std::strin
         ImageEntropyLauncher(workingFrame, imageDir, SortedFileList[i], i, imEntropyTrigger, imStability, camera);
 
         if  (imEntropyTrigger) {
+            //BubblePixelPos.clear();
             break;
         }
 
-        if (not imStability) break;
+        if (not imStability) {
+            //BubblePixelPos.clear();
+            break;
+        }
     }
 
 
@@ -181,6 +185,7 @@ void SearchForBubbleInFrame( std::vector<std::string> SortedFileList, std::strin
         notFound = true;
         printf("\n**No bubbles were found. Manually check this folder**\n");
         //BubblePixelPos.push_back(cv::RotatedRect(cv::Point2f(0,0), cv::Size2f(0,0), 0));
+        //BubblePixelPos.clear();
         trigFrame = -1;
     }
 
@@ -210,9 +215,13 @@ void SearchForBubbleInFrame( std::vector<std::string> SortedFileList, std::strin
         //std::string imagesIDStoragePath = "checkrun/";
 
         //LocalizeOMatic(BubbleFrame, CmpFrame, trigNextFrame, BubblePixelPos, eventSeq.c_str(), imagesIDStoragePath);
+        //BubblePixelPos.clear();
+
         if (camera == 0){
             TPLLocalizer SearchTemplate(img_mask0, false);
             SearchTemplate.MarkBubbles(BubblePixelPos, workingFrame);
+
+
         } else if (camera == 1) {
             TPLLocalizer SearchTemplate(img_mask1, false);
             SearchTemplate.MarkBubbles(BubblePixelPos, workingFrame);
@@ -323,6 +332,8 @@ int main(int argc, char** argv)
 
 
 
+
+
         /* ************************************
          ********* Camera 1 Operations ******
          **************************************/
@@ -342,8 +353,19 @@ int main(int argc, char** argv)
 
         int nbub_cam1 = BubblePixelPos1.size();
 
-        //std::cout<<"Cent X: "<<BubblePixelPos1[0].center.x<<" | Cent Y: "<<BubblePixelPos1[0].center.y <<"\n";
 
+        /* Debug code to check the bubble output ont he fly ******
+        if (nbub_cam0 != 0){
+            for (int i=0; i<nbub_cam0; i++)
+                std::cout<<"C0 Cent X: "<<BubblePixelPos0[i].center.x<<" | Cent Y: "<<BubblePixelPos0[i].center.y <<"\n";
+        }
+
+        if (nbub_cam1 != 0){
+            for (int i=0; i<nbub_cam1; i++)
+                std::cout<<"C1 Cent X: "<<BubblePixelPos1[i].center.x<<" | Cent Y: "<<BubblePixelPos1[i].center.y <<"\n";
+        }
+
+        /* ************** */
 
 
         /* *************** Debug output pictures ************
