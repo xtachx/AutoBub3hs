@@ -1,0 +1,15 @@
+# use glob syntax.
+syntax: glob
+
+*.elc
+*.pyc
+*~
+build/*
+*conflicted*
+CMakeFiles/*
+CMakeCache.txt
+cmake_install.cmake
+testbed/*
+*.db
+core.*
+checkrun
