@@ -142,6 +142,8 @@ void TPLLocalizer::BlobMatch(std::vector<cv::RotatedRect>& botBubbleLoc)
 void TPLLocalizer::MarkBubbles(std::vector<cv::RotatedRect>& bubbleRects, cv::Mat& bubbleFrame)
 {
 
+
+
     // Find total markers
     std::vector<std::vector<cv::Point> > contours;
     cv::findContours(this->MaskFrame, contours, CV_RETR_EXTERNAL, CV_CHAIN_APPROX_SIMPLE);
@@ -149,7 +151,7 @@ void TPLLocalizer::MarkBubbles(std::vector<cv::RotatedRect>& bubbleRects, cv::Ma
     int nBubbles = 0;
 
     /*Make two vectors to store the fitted rectanglse and ellipses*/
-    std::vector<cv::RotatedRect> minEllipse( contours.size() );
+    std::vector<cv::RotatedRect> minEllipse;
     std::vector<cv::Rect> minRect( contours.size() );
 
     /*Generate the ellipses and rectangles for each contours*/
@@ -158,10 +160,10 @@ void TPLLocalizer::MarkBubbles(std::vector<cv::RotatedRect>& bubbleRects, cv::Ma
         minRect[i] = cv::boundingRect( contours[i]);
         //This is for fun
         if( contours[i].size() > 5 and (minRect[i].width >= 5 and minRect[i].height >= 5) ) {
-            minEllipse[i] = cv::fitEllipse( cv::Mat(contours[i]) );
+            minEllipse.push_back(cv::fitEllipse( cv::Mat(contours[i]) ));
             //std::cout<<"Size of bounding rect: W "<<minRect[i].width<<" H "<<minRect[i].height<<"\n";
             /*Code for drawing crosshairs*/
-            //this->DrawCrosshairs(bubbleFrame, minRect[i]);
+            this->DrawCrosshairs(bubbleFrame, minRect[i]);
             nBubbles++;
         }
 
@@ -171,6 +173,7 @@ void TPLLocalizer::MarkBubbles(std::vector<cv::RotatedRect>& bubbleRects, cv::Ma
 
     /*Copy over the data*/
     //printf("Min Ellipse Vec size: %d\n", minEllipse.size());
+    //printf("Number of bubbles passing cuts %d\n", nBubbles);
     bubbleRects.insert(bubbleRects.end(), minEllipse.begin(), minEllipse.end());
 
     //debugShow(bubbleFrame);
