@@ -51,6 +51,9 @@ TPLLocalizer::TPLLocalizer(cv::Mat& prFrame, bool nonStopPref)
     /*User Prefs*/
     nonStopMode = nonStopPref;  /*Flag for non-stop operation vs debug*/
 
+    /*read the bubble template*/
+    templ = cv::imread("BTem.png", 0);
+
 
 }
 

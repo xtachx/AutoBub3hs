@@ -34,7 +34,8 @@ class TPLLocalizer{
         /*The in-process stepping frames*/
         cv::Mat probabilityMapFrame;
         cv::Mat MaskFrame, presentationFrame;
-        cv::Mat templ = cv::imread("BTem.png", 0);
+        cv::Mat templ;
+
 
 
 
