@@ -2,7 +2,7 @@
 <CodeBlocks_project_file>
 	<FileVersion major="1" minor="6" />
 	<Project>
-		<Option title="AutoBub" />
+		<Option title="AutoBub3" />
 		<Option platforms="Unix;Mac;" />
 		<Option makefile_is_custom="1" />
 		<Option pch_mode="2" />
@@ -62,19 +62,21 @@
 		<Unit filename="BGS/methods/jmo/blob.h" />
 		<Unit filename="BubbleLocalizer/L2Localizer.cpp" />
 		<Unit filename="BubbleLocalizer/L2Localizer.hpp" />
+		<Unit filename="BubbleLocalizer/L3Localizer.cpp" />
+		<Unit filename="BubbleLocalizer/L3Localizer.hpp" />
 		<Unit filename="BubbleLocalizer/TplMatchLocalizer.cpp" />
 		<Unit filename="BubbleLocalizer/TplMatchLocalizer.hpp" />
-		<Unit filename="CGeyserImageAnalysis/main.cpp" />
 		<Unit filename="CMakeLists.txt" />
-		<Unit filename="DetectBubble/detectbub.cpp" />
-		<Unit filename="DetectBubble/detectbub.hpp" />
 		<Unit filename="ImageEntropyMethods/ImageEntropyMethods.cpp" />
 		<Unit filename="ImageEntropyMethods/ImageEntropyMethods.hpp" />
+		<Unit filename="LBP/LBPUser.cpp" />
+		<Unit filename="LBP/LBPUser.h" />
+		<Unit filename="LBP/lbp.cpp" />
+		<Unit filename="LBP/lbp.hpp" />
+		<Unit filename="LBP/main.cxx" />
 		<Unit filename="ParseFolder/ParseFolder.cpp" />
 		<Unit filename="ParseFolder/ParseFolder.hpp" />
 		<Unit filename="SQLiteDBstorage/CMakeLists.txt" />
-		<Unit filename="SQLiteDBstorage/imageAnalysisResults.cpp" />
-		<Unit filename="SQLiteDBstorage/imageAnalysisResults.hpp" />
 		<Unit filename="common/CommonDatatypes.h" />
 		<Unit filename="testbed/CMakeLists.txt" />
 		<Unit filename="testbed/ImageEntropyMethods.cpp" />

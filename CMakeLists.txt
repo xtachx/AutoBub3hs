@@ -9,35 +9,29 @@ set(CMAKE_MODULE_PATH "cmake_modules")
 
 SET(CMAKE_CXX_FLAGS "-std=gnu++11")
 
-file(GLOB JMO_BGS_HEADERS ${CMAKE_CURRENT_SOURCE_DIR}/BGS/methods/jmo/*.h)
-file(GLOB JMO_BGS_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/BGS/methods/jmo/*.cpp)
+file(GLOB LBP_HEADERS ${CMAKE_CURRENT_SOURCE_DIR}/LBP/*.hpp)
+file(GLOB LBP_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/LBP/*.cpp)
 
 set(SOURCE
    ${CMAKE_CURRENT_SOURCE_DIR}/ImageEntropyMethods/ImageEntropyMethods.cpp
    ${CMAKE_CURRENT_SOURCE_DIR}/ParseFolder/ParseFolder.cpp
-   #${CMAKE_CURRENT_SOURCE_DIR}/SQLiteDBstorage/imageAnalysisResults.cpp
-   ${CMAKE_CURRENT_SOURCE_DIR}/BubbleLocalizer/TplMatchLocalizer.cpp
-   #${CMAKE_CURRENT_SOURCE_DIR}/BGS/methods/DPZivkovicAGMMBGS.cpp
-   ${CMAKE_CURRENT_SOURCE_DIR}/BGS/methods/AdaptiveSelectiveBackgroundLearning.cpp
-   #${JMO_BGS_SOURCES}
-
+   ${CMAKE_CURRENT_SOURCE_DIR}/BubbleLocalizer/L3Localizer.cpp
+   ${CMAKE_CURRENT_SOURCE_DIR}/common/UtilityFunctions.cpp
 )
 set(HEADERS
    ${CMAKE_CURRENT_SOURCE_DIR}/ImageEntropyMethods/ImageEntropyMethods.hpp
    ${CMAKE_CURRENT_SOURCE_DIR}/ParseFolder/ParseFolder.hpp
-   #${CMAKE_CURRENT_SOURCE_DIR}/SQLiteDBstorage/imageAnalysisResults.hpp
    ${CMAKE_CURRENT_SOURCE_DIR}/common/CommonDatatypes.h
-   ${CMAKE_CURRENT_SOURCE_DIR}/BubbleLocalizer/TplMatchLocalizer.hpp
-   #${CMAKE_CURRENT_SOURCE_DIR}/BGS/methods/DPZivkovicAGMMBGS.h
-   ${CMAKE_CURRENT_SOURCE_DIR}/BGS/methods/AdaptiveSelectiveBackgroundLearning.h
-   ${CMAKE_CURRENT_SOURCE_DIR}/BGS/bgs.hpp
-   #${JMO_BGS_HEADERS}
+   ${CMAKE_CURRENT_SOURCE_DIR}/BubbleLocalizer/L3Localizer.hpp
+   ${CMAKE_CURRENT_SOURCE_DIR}/common/UtilityFunctions.hpp
 
 )
 
-add_library(bgs SHARED ${JMO_BGS_SOURCES})
-target_link_libraries(bgs ${OpenCV_LIBS})
-set_property(TARGET bgs PROPERTY PUBLIC_HEADER ${bgs_include})
+add_library(lbpuser SHARED ${LBP_SOURCES})
+target_link_libraries(lbpuser ${OpenCV_LIBS})
+set_property(TARGET lbpuser PROPERTY PUBLIC_HEADER ${LBP_HEADERS})
 
 add_executable( abub AutoBubStart.cpp )
-target_link_libraries( abub ${OpenCV_LIBS} ${SOURCE} ${HEADERS} bgs )
+target_link_libraries( abub ${OpenCV_LIBS} ${SOURCE} ${HEADERS} lbpuser )
+#target_link_libraries( abub ${OpenCV_LIBS} ${SOURCE} ${HEADERS} )
+
