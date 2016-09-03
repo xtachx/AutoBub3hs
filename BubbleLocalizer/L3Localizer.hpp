@@ -18,11 +18,12 @@
 
 /*Includes*/
 #include <opencv2/opencv.hpp>
+#include "../AnalyzerUnit.hpp"
 
 
 /*Memory Allocations*/
 
-class L3Localizer{
+class L3Localizer: public AnalyzerUnit{
 
     private:
 
@@ -43,6 +44,8 @@ class L3Localizer{
 
         /*Matrices to store the frames.*/
         cv::Mat presentationFrame, frameDiffTrig;
+        cv::Mat ComparisonFrame, triggerFrame;
+
 
         /*Test functions and pass criteria*/
         void EllipseTest(cv::Mat&, cv::RotatedRect&, cv::Rect&, cv::Scalar&, std::vector<cv::RotatedRect>&,  int, bool drawEllipses=true);
@@ -56,18 +59,18 @@ class L3Localizer{
 
     public:
         /*Constructor and deconstructor*/
-        L3Localizer(cv::Mat&, bool nonStopPref = true );
+        L3Localizer(std::string, std::string, int, bool nonStopPref = true );
         ~L3Localizer();
 
         /*Public functions exposing the interface*/
         //void LocalizeBottomBubble(cv::Mat&, cv::Mat&, std::vector<cv::RotatedRect>& );
-        void TemporalGuidedSearch2(cv::Mat&, cv::Mat&, cv::Mat&);
+        void CalculateInitialBubbleParams(void );
 
         /*Public variables exposed for direct manipulation*/
-        int numBubbleMultiplicity;
+        int numBubbleMultiplicity=0;
         bool Level1SuspicionFlag;
 
-        std::vector<cv::RotatedRect> bubbleRects;
+        void LocalizeOMatic(std::string);
 
 
 
@@ -78,7 +81,6 @@ class L3Localizer{
 
 };
 
-void LocalizeOMatic(cv::Mat &, cv::Mat&, cv::Mat&, std::vector<cv::RotatedRect>&, std::string, std::string);
 bool bubbleBRectSort(cv::RotatedRect , cv::RotatedRect );
 
 

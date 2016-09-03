@@ -266,59 +266,49 @@ int main(int argc, char** argv)
     std::string eventDir=dataLoc+run_number+"/";
 
 
-    std::string abubOutFilename = out_dir+"abub2_"+run_number+".txt";
+    std::string abubOutFilename = out_dir+"abub3_"+run_number+".txt";
     const char* abub_out_file=abubOutFilename.c_str();
     FILE * pFile;
     pFile = fopen (abub_out_file,"w");
-    fprintf(pFile, "%s\n", "Output of AutoBub v2 - the automatic unified bubble finder code by Pitam, using OpenCV");
-    //run  ev  ibub  frame0  frame1  nbub0  nbub1  nbub  npix0  hori0  vert0  horivar0  vertvar0  npix1  hori1  vert1  horivar1  vertvar1
+    fprintf(pFile, "%s\n", "Output of AutoBub v3 - the automatic unified bubble finder code by Pitam, using OpenCV");
 
-    //Original version of abub
-    //fprintf(pFile, "%s\n", "run ev nbub_a ibub_a frame0_a nbub0_a frame1_a nbub1_a pixelx0_a pixely0_a smajdiam0_a smindiam0_a pixelx1_a pixely1_a smajdiam1_a smindiam1_a");
+    /*The output needs to be in the PICO output format, that goes as
+     *run  ev  ibub  frame0  frame1  nbub0  nbub1  nbub  npix0  hori0  vert0  horivar0  vertvar0  npix1  hori1  vert1  horivar1  vertvar1
+     */
 
     // Hugh edit, to try to align with getBub (I know, I know)
     fprintf(pFile, "%s\n", "run ev ibub nbub frame0 nbub0 frame1 nbub1 hori0 vert0 smajdiam0_a smindiam0_a hori1 vert1 smajdiam1_a smindiam1_a");
-
     fprintf(pFile, "%s\n2\n\n\n", "%12s %5d %d %d %d %d %d %d %.02f %.02f %.02f %.02f %.02f %.02f %.02f %.02f");
-
-
-    //std::string imageDir=eventDir+eventSeq+"/";
 
 
     /*Construct list of events*/
     std::vector<std::string> EventList;
     int* EVstatuscode = 0;
     GetEventDirLists(eventDir.c_str(), EventList, EVstatuscode);
-    /*A sort is unnecessary at this level*/
+
+    /*A sort is unnecessary at this level, but it is good practice and does not cost extra resources*/
     std::sort(EventList.begin(), EventList.end(), eventNameOrderSort);
     /*Event list is now constructed*/
-    /***************************************/
+    /* ************************************* */
 
     /*Memory allocations for file list vectors*/
     std::vector<std::string> FileList_cam0;
     std::vector<std::string> FileList_cam1;
 
-    /* which kind of bgs to use */
-    //bgs0 = new AdaptiveSelectiveBackgroundLearning;
-    //bgs0 = new MultiLayerBGS;
-    //bgs1 = new MultiLayerBGS;
-    //bgs1 = new AdaptiveSelectiveBackgroundLearning;
-    //bgs_special = new MultiLayerBGS;
-
-    cv::Mat LearnFrame11, LearnFrame12, LearnFrame21, LearnFrame22;
 
 
 
-    /*Detect mode*/
+    /*Detect mode
+     *Iterate through all the events in the list and detect bubbles in them one by one
+     *A seprate procedure will store them to a file at the end
+     */
 
     for (auto evi = 0; evi < EventList.size(); evi++) {
         std::string imageDir=eventDir+EventList[evi]+"/";
-        //int eventSeq = std::stoi(EventList[evi]);
         int* statuscode = 0;
         int trigFrame_0, trigFrame_1;
         cv::Mat markedTriggerFrame0, markedTriggerFrame1;
 
-        //std::cout<<" Image Dir: "<<imageDir<<std::endl; //debug
 
         /* ***************************
          * ***** Camera 0 Operations ******

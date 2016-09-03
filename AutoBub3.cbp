@@ -35,7 +35,16 @@
 			<Add option="-Wall" />
 			<Add option="-fexceptions" />
 		</Compiler>
+		<Unit filename="AlgorithmTraining/Trainer.cpp" />
+		<Unit filename="AlgorithmTraining/Trainer.hpp" />
+		<Unit filename="AnalyzerUnit.cpp">
+			<Option target="all" />
+		</Unit>
+		<Unit filename="AnalyzerUnit.hpp">
+			<Option target="&lt;{~None~}&gt;" />
+		</Unit>
 		<Unit filename="AutoBubStart.cpp" />
+		<Unit filename="AutoBubStart3.cpp" />
 		<Unit filename="BGS/bgs.cpp" />
 		<Unit filename="BGS/bgs.hpp" />
 		<Unit filename="BGS/methods/AdaptiveSelectiveBackgroundLearning.cpp" />
@@ -91,6 +100,15 @@
 			<code_completion />
 			<debugger />
 			<envvars />
+			<DoxyBlocks>
+				<comment_style block="3" line="3" />
+				<doxyfile_project />
+				<doxyfile_build />
+				<doxyfile_warnings />
+				<doxyfile_output />
+				<doxyfile_dot />
+				<general />
+			</DoxyBlocks>
 		</Extensions>
 	</Project>
 </CodeBlocks_project_file>
