@@ -30,6 +30,8 @@
 #include "../LBP/lbp.hpp"
 #include "../LBP/LBPUser.hpp"
 #include "../common/UtilityFunctions.hpp"
+#include "../AnalyzerUnit.hpp"
+
 
 
 /* ******************************************************************************
@@ -41,14 +43,9 @@
  * ******************************************************************************/
 
 
-L3Localizer::L3Localizer(cv::Mat& prFrame, bool nonStopPref)
+L3Localizer::L3Localizer(std::string EventID, std::string ImageDir, int CameraNumber, bool nonStopPref):AnalyzerUnit(EventID, ImageDir, CameraNumber)
 {
 
-    /*Assign the Presentation frame
-     * Rest of them have been moved
-     * due to expansion of the code
-     */
-    presentationFrame = prFrame;
 
     /*User Prefs*/
     nonStopMode = nonStopPref;  /*Flag for non-stop operation vs debug*/
@@ -197,327 +194,113 @@ void L3Localizer::rem_unique(std::vector<cv::Rect>& L2SearchAreas, std::vector<c
  *
  *  * *****************************************************************************/
 
-void L3Localizer::TemporalGuidedSearch2(cv::Mat& TriggerFrame, cv::Mat& ComparisonFrame, cv::Mat& FrameAfterTrigger)
+void L3Localizer::CalculateInitialBubbleParams(void )
 {
+
+    //cv::Mat& TriggerFrame, ComparisonFrame, cv::Mat& FrameAfterTrigger
 
     /*Declare memory / variables that will be needed */
     cv::Mat LBPImageTrig, LBPImageTrigNext;
     cv::Mat FrameDiffTrig, FrameDiffTrigNext;
+    cv::Mat FrameAfterTrigger = cv::imread(this->ImageDir + this->CameraFrames[this->MatTrigFrame+1],0);
 
 
     /*Temporary holder for the presentationFrame*/
     cv::Mat tempPresentation;
+    cv::Mat tempInvertImage;
     tempPresentation = this->presentationFrame;//.clone();
 
 
+
     /*Construct the frame differences and LBPImage Frames*/
-    FrameDiffTrigNext = FrameAfterTrigger - ComparisonFrame;
-    FrameDiffTrig =  TriggerFrame - ComparisonFrame;
+    FrameDiffTrigNext = FrameAfterTrigger - this->ComparisonFrame;
+    cv::absdiff(FrameAfterTrigger, this->ComparisonFrame, FrameDiffTrig);
+    //FrameDiffTrig =  this->triggerFrame - this->ComparisonFrame;
 
 
-    cv::normalize(FrameDiffTrig, FrameDiffTrig, 0, 255, NORM_MINMAX);
-    cv::normalize(FrameDiffTrigNext, FrameDiffTrigNext, 0, 255, NORM_MINMAX);
+    //cv::normalize(FrameDiffTrig, FrameDiffTrig, 0, 255, NORM_MINMAX);
+    //cv::normalize(FrameDiffTrigNext, FrameDiffTrigNext, 0, 255, NORM_MINMAX);
 
-    /* Remove noise */
-    int morph_elem = 1;
-    int morph_size = 2;
-    cv::Mat element = getStructuringElement( morph_elem, cv::Size( 2*morph_size + 1, 2*morph_size+1 ), cv::Point( morph_size, morph_size ) );
-    // Apply the specified morphology operation
-    //cv::morphologyEx( FrameDiffTrig, FrameDiffTrig, cv::MORPH_OPEN, element );
-    /*Noise removed here*/
+    std::cout<<"The next trigger is: "<<this->CameraFrames[this->MatTrigFrame]<<"\n";
+    //debugShow(FrameAfterTrigger);
+    //debugShow(FrameDiffTrigNext);
 
+    //Denoising
+    //int rows = FrameDiffTrig.rows;
+    //int cols = FrameDiffTrig.cols;
 
+    /*Kernel Definition*/
+    int boxcar1_width = 3;
+    int boxcar2_width = 50;
+    int guard_band=2;
+    cv::Mat boxCarKernel;
 
+    cv::Mat boxCarKernel2 = -1.0*cv::Mat::ones(1,boxcar2_width,CV_8U);
+    cv::Mat boxCarKernelG = cv::Mat::zeros(1, guard_band+1+guard_band,CV_8U);
+    cv::Mat boxCarKernel1 = cv::Mat::ones(1, boxcar1_width,CV_8U);
+
+    cv::hconcat(boxCarKernel2,boxCarKernelG,boxCarKernel); // horizontal concatenation
+    cv::hconcat(boxCarKernel,boxCarKernel1,boxCarKernel); // horizontal concatenation
+
+    //boxCarKernel /= (float)(boxcar2_width+boxcar1_width);
+    /* **************************** */
+
+    cv::filter2D(FrameDiffTrig, FrameDiffTrig, -1 , boxCarKernel, Point(boxcar2_width+guard_band-1, 0), 0, BORDER_DEFAULT );
+
+    //std::cout << "M = "<< std::endl << " "  << boxCarKernel << std::endl << std::endl;
+    //FrameDiffTrig /= (boxcar2_width+boxcar1_width);
+    cv::threshold(FrameDiffTrig, FrameDiffTrig, 30, 255, CV_THRESH_TOZERO);
+    //cv::normalize(FrameDiffTrig,FrameDiffTrig, 0, 255, NORM_L2);
+    debugShow(this->presentationFrame);
+    FrameDiffTrig=10.0*FrameDiffTrig;
     debugShow(FrameDiffTrig);
-    debugShow(FrameDiffTrigNext);
+
+
 
     LBPImageTrigNext = lbpImageSingleChan(FrameDiffTrigNext);
     LBPImageTrig = lbpImageSingleChan(FrameDiffTrig);
 
 
     debugShow(LBPImageTrig);
-    debugShow(LBPImageTrigNext);
+    //debugShow(LBPImageTrigNext);
 
     /*SAVE POINT 1*/
     if (!this->nonStopMode) cv::imwrite("SavePoint1_LBPImageTrig.jpg", LBPImageTrig);
     if (!this->nonStopMode) cv::imwrite("SavePoint1_LBPImageTrigNext.jpg", LBPImageTrigNext);
 
-    showHistogramImage(LBPImageTrigNext);
-    /*Use contour / canny edge detection to find contours of interesting objects*/
-    cv::threshold(LBPImageTrigNext, LBPImageTrigNext, 30, 255, CV_THRESH_BINARY);
-    //debugShow(LBPImageTrigNext);
+    //showHistogramImage(LBPImageTrigNext);
 
-
-
-
-
-
-
-    cv::Mat LBPNextContoured = LBPImageTrigNext.clone();
-    //debugShow(LBPNextContoured);
-    std::vector<std::vector<cv::Point> > contours;
-    cv::findContours(LBPNextContoured, contours, CV_RETR_EXTERNAL, CV_CHAIN_APPROX_TC89_L1);
-
-    /*Make two vectors to store the fitted rectanglse and ellipses*/
-    std::vector<cv::RotatedRect> minEllipse( contours.size() );
-    std::vector<cv::Rect> minRect;
-
-
-    std::cout<<"Contours found: "<<minEllipse.size()<<"\n";
-
-    /*Draw each contour and rectangle and apply the ellipse test!*/
-    for( int i = 0; i< contours.size(); i++ )
-    {
-
-        if (cv:: contourArea(contours[i]) > 5)
-        {
-            cv::drawContours( tempPresentation, contours, i, this->color_red, 1, 8);
-            std::cout<<cv::contourArea(contours[i])<<"\n";
-            cv::Rect _vBoundingRect = cv::boundingRect( contours[i]);
-            minRect.push_back(_vBoundingRect) ;
-            //cv::rectangle(tempPresentation, _vBoundingRect, this->color_orange, 1,1,0);
-            /*SAVE POINT 3*/
-            if (!this->nonStopMode) cv::imwrite("SavePoint3_FullFrameContourBox.jpg", this->presentationFrame);
-
-            cv::rectangle(tempPresentation, minRect[i], this->color_orange, 2,1,8);
-            /*Ellipse Test*/
-            //this->EllipseTest(tempPresentation, minEllipse[i], minRect[i], this->color, bubbleLocations2, SEARCH_LEVEL_2, false);
-
-        }
-    }
-
-    debugShow(tempPresentation);
-
-
-    /*****************************/
-
-    /*Get rid of dupes - small subroutine*/
-    std::vector<cv::Rect> L2SearchAreasFixed;  /*Assign memory for fixed ROIs*/
-    /*Sort the ROIs by descending area, so we can extend bigger areas and see if the smaller ones overlap
-     *Note: the sort function is a lambda, so we need c++11 for this.
-     *I will use C++11 anyways so this isnt a big deal now*/
-    std::sort(minRect.begin(), minRect.end(), [](cv::Rect a, cv::Rect b)
-    {
-        return a.area() > b.area();
-    });
-
-
-    /*Use for debugging
-     */
-    for (std::vector<int>::size_type i=0; i<minRect.size(); i++)
-        printf("x: %d y: %d | w: %d h: %d | BBoxArea: %d \n",  minRect[i].x,  minRect[i].y,  minRect[i].width, minRect[i].height, minRect[i].area());
-    std::cout << '\n';
-
-
-    do
-    {
-        this->rem_unique(minRect, L2SearchAreasFixed);
-    }
-    while (minRect.size()>=1);
+    //do
+    //{
+    //    this->rem_unique(minRect, L2SearchAreasFixed);
+    //}
+    //while (minRect.size()>=1);
 
     //L2SearchAreasFixed = minRect ;
-
-    /*------*/
-    printf("ROIs remaining - after dupe cleaning: %d\n", L2SearchAreasFixed.size());
-
-    cv::Mat _trigFrameProc, _compFrameProc, _d1, _d2, _diffFrameProc, _dL1, _dL2, _diffLBPImg, _diffDeNoise;
-    cv::Mat sobelx, sobely;
-
-    for (std::vector<int>::size_type i = 0; i != L2SearchAreasFixed.size(); i++)
-    {
-
-
-        /*Get the boundingRect*/
-        cv::Rect brect = L2SearchAreasFixed[i];
-
-
-        /*Accounting for the fact that bubble moves up*/
-        //brect.y += 10;
-        brect.height += brect.height*0.5;
-        brect.width += brect.width*0.8;
-
-        /*Draw the boundingRect*/
-        cv::rectangle(tempPresentation, brect, this->color_orange,1,8,0);
-
-        debugShow(tempPresentation);
-//
-////
-////        cv::Point offsets(brect.x, brect.y);
-////        int maxCircleRadius = brect.width > brect.height ? brect.width : brect.height;
-////
-////
-
-        _trigFrameProc = TriggerFrame.clone();
-        _trigFrameProc = _trigFrameProc(brect);
-
-
-        _compFrameProc = ComparisonFrame;
-        _compFrameProc = _compFrameProc(brect);
-
-
-        cv::resize(_trigFrameProc, _trigFrameProc, cv::Size(5*brect.width, 5*brect.height ), INTER_LANCZOS4);
-        cv::resize(_compFrameProc, _compFrameProc, cv::Size(5*brect.width, 5*brect.height ), INTER_LANCZOS4);
-
-
-
-        cv::fastNlMeansDenoising(_trigFrameProc, _trigFrameProc, 3, 7, 21 );
-        cv::fastNlMeansDenoising(_compFrameProc, _compFrameProc, 3, 7, 21 );
-
-
-
-
-        _d1 = _trigFrameProc - _compFrameProc;
-        cv::normalize(_d1, _d1, 0, 255, NORM_MINMAX, CV_8UC1);
-        _dL1 = lbpImageSingleChan(_d1);
-        cv::threshold(_dL1, _dL1, 25, 255, CV_THRESH_BINARY);
-
-        debugShow(_d1);
-        debugShow(_dL1);
-        /* ****************************************************
-         * For debugging purposes and trying new stuff
-         *
-        _d2 = _compFrameProc - _trigFrameProc;
-        cv::normalize(_d2, _d2, 0, 255, NORM_MINMAX, CV_8UC1);
-        _dL2 = lbpImageSingleChan(_d2);
-        cv::normalize(_dL2, _dL2, 0, 255, NORM_MINMAX, CV_8UC1);
-        //cv::threshold(_dL2, _dL2, 5, 255, CV_THRESH_BINARY);
-        debugShow(_dL2);
-        *
-        * ***************************************************** */
-
-
-
-        vector<vector<Point> > contours;
-        vector<Vec4i> hierarchy;
-        /// Find contours
-        cv::findContours( _dL1, contours, hierarchy, CV_RETR_EXTERNAL, CV_CHAIN_APPROX_TC89_L1, Point(0, 0) );
-
-        std::vector<cv::RotatedRect> bubbleLocations2( contours.size() );
-        std::vector<cv::RotatedRect> minEllipse2( contours.size() );
-
-
-
-//        /// Find the convex hull object for each contour
-//        vector<vector<Point> >hull( contours.size() );
-//        for( int i = 0; i < contours.size(); i++ )
-//          {  cv::convexHull( Mat(contours[i]), hull[i], false ); }
-//
-//        /// Draw contours + hull results
-        cv::Mat drawing = Mat::zeros( _dL1.size(), CV_8UC3 );
-        for( int i = 0; i< contours.size(); i++ )
-        {
-            //minRect2[i] = cv::minAreaRect(cv::Mat(contours[i]));
-
-            if(cv::contourArea(contours[i])>10){
-                //drawContours( drawing, contours, i, this->color, 1, 8, hierarchy[2], 0, Point() );
-                minEllipse2[i] = cv::fitEllipse(cv::Mat(contours[i]));
-
-                cv::Rect bbrect = cv::boundingRect(cv::Mat(contours[i]));
-
-
-                /*Ellipse test*/
-
-                this->EllipseTest(drawing, minEllipse2[i], bbrect, this->color_red, bubbleLocations2, 0, true);
-
-
-                }
-            //drawContours( drawing, hull, i, color, 1, 8, vector<Vec4i>(), 0, Point() );
-        }
-
-
-
-
-        std::cout<<"Number of bubbles: "<<bubbleLocations2.size()<<"\n";
-
-        debugShow(drawing);
-
-
-        //debugShow(_trigFrameProc);
-
-
-
-        //_diffLBPImg = _dL1 + _dL2;
-        //debugShow(_diffLBPImg);
-
-
-//        cv::threshold(imgBotROI, imgBotThresholdCut,0, 255, CV_THRESH_BINARY+CV_THRESH_OTSU);
-//        //debugShow(imgBotThresholdCut);
-//
-//
-//        std::vector<cv::Vec4i> hierarchy;
-//        std::vector<std::vector<cv::Point> > contours2;
-//        std::vector<cv::RotatedRect> minEllipse;
-//
-//        /* Find contours - with Canny edge detection*/
-//        findContours( imgBotThresholdCut, contours2, hierarchy, CV_RETR_EXTERNAL, CV_CHAIN_APPROX_SIMPLE, cv::Point(0, 0) );
-//
-//
-//        for( int i = 0; i < contours2.size(); i++ ) {
-//            int contourArea = cv::contourArea(contours2[i]);
-//            if (contours2[i].size() > 5){
-//                minEllipse.push_back(fitEllipse( cv::Mat(contours2[i]) ));
-//
-//                //debugShow(imgBotThresholdCut);
-//            }
-//        }
-//
-//        for( int i = 0; i < minEllipse.size(); i++ ) {
-//
-//            /*Account for the multiplicity*/
-//            this->numBubbleMultiplicity++;
-//
-//
-//            /*Fix the centres of the ellipses for the presentation frame*/
-//            minEllipse[i].center.x+=brect.x;
-//            //minEllipse[i].center.x+=this->topCutCornerX;
-//
-//            minEllipse[i].center.y+=brect.y;
-//            //minEllipse[i].center.y+=this->topCutCornerY;
-//
-//            cv::ellipse( tempPresentation, minEllipse[i], this->color, 1, 8 );
-//
-//
-//            //printf("x: %f y: %f | w: %f h: %f\n",  minEllipse[i].center.x,  minEllipse[i].center.y,  minEllipse[i].size.width, minEllipse[i].size.height);
-//        }
-//        /*Copy over the data*/
-//        //printf("Min Ellipse Vec size: %d\n", minEllipse.size());
-//        bubbleRects.insert(bubbleRects.end(), minEllipse.begin(), minEllipse.end());
-//
-    }
-//    /*Debug Flags*/
-    //debugShow(tempPresentation);
-    //cv::imwrite("FinalResult2.jpg", tempPresentation);
-
-
 
 
 }
 /*Takes care of the localization completely. Just like it says... Localize-O-Matic!*/
 
-void LocalizeOMatic(cv::Mat& BubbleFrame, cv::Mat& CmpFrame, cv::Mat& trigNextFrame, std::vector<cv::RotatedRect>& botBubbleLoc, std::string eventSeq, std::string imageStorePath)
+void L3Localizer::LocalizeOMatic(std::string imageStorePath)
 {
 
-    std::vector<cv::RotatedRect> bubbleLocations;
-    cv::Mat BFChan[3], CmpChan[3],  trigNextChan[3];
+    if (!this->okToProceed) return;
+    /*Assign the three useful frames*/
+    this->triggerFrame = cv::imread(this->ImageDir + this->CameraFrames[this->MatTrigFrame],0);
+    this->presentationFrame = triggerFrame.clone();
+    this->ComparisonFrame = cv::imread(this->ImageDir + this->CameraFrames[0],0);
 
-    /*-----------To optimize later*******/
-    cv::split(BubbleFrame, BFChan);
-    cv::split(CmpFrame, CmpChan);
-    cv::split(trigNextFrame, trigNextChan);
+    /*Run the analyzer series*/
+    this->numBubbleMultiplicity=0;
+    this->CalculateInitialBubbleParams();
 
-    L3Localizer LocalizeMe(BubbleFrame, 1);
-    LocalizeMe.numBubbleMultiplicity=0;
-
-    /*And launch!*/
-    LocalizeMe.TemporalGuidedSearch2(BFChan[0], CmpChan[0], trigNextChan[0]);
 
     /*Analyze results*/
-    std::cout<<"Refined bubble multiplicity:  "<<LocalizeMe.numBubbleMultiplicity<<"\n";
+    std::cout<<"Refined bubble multiplicity:  "<<this->numBubbleMultiplicity<<"\n";
 
     /*Store the finished image*/
     //cv::imwrite(imageStorePath+"/"+eventSeq+".jpg", BubbleFrame);
 
-    /*Copy data over*/
-    botBubbleLoc = LocalizeMe.bubbleRects;
 
 }
