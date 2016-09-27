@@ -231,34 +231,36 @@ void L3Localizer::CalculateInitialBubbleParams(void )
 
     cv::threshold(overTheSigma, overTheSigma, 3, 255, CV_THRESH_TOZERO);
     cv::threshold(overTheSigma, overTheSigma, 0, 255, CV_THRESH_BINARY|CV_THRESH_OTSU);
-
+    //cv::imwrite("CheckOutput.png",overTheSigma);
 
 
     //debugShow(NewFrameDiffTrig);
     //cv::normalize(overTheSigma,overTheSigma,0,255,NORM_MINMAX);
 
 
-    std::vector<cv::Vec3f> circles;
+    /*Use contour / canny edge detection to find contours of interesting objects*/
+    std::vector<std::vector<cv::Point> > contours;
+    cv::findContours(overTheSigma, contours, CV_RETR_EXTERNAL, CV_CHAIN_APPROX_TC89_L1);
 
-    /// Apply the Hough Transform to find the circles
-    cv::HoughCircles( overTheSigma, circles, CV_HOUGH_GRADIENT, 1, overTheSigma.rows/8, 200, 100, 0, 0 );
+    /*Make two vectors to store the fitted rectanglse and ellipses*/
+    std::vector<cv::RotatedRect> minAreaRect( contours.size() );
+    std::vector<cv::Rect> minRect( contours.size() );
 
-    /// Draw the circles detected
-    for( size_t i = 0; i < circles.size(); i++ )
-    {
-        printf("Circle %d\n", i);
-        cv::Point center(cvRound(circles[i][0]), cvRound(circles[i][1]));
-        int radius = cvRound(circles[i][2]);
-        // circle center
-        //circle( src, center, 3, Scalar(0,255,0), -1, 8, 0 );
-        // circle outline
-        cv::circle( this->presentationFrame, center, radius, this->color_red, 2, 8, 0 );
+    /*Generate the ellipses and rectangles for each contours*/
+    for( int i = 0; i < contours.size(); i++ ) {
+        minRect[i] = cv::boundingRect( contours[i]);
+
+        std::cout<<" New contour size: "<<contours[i].size()<<"\n";
+        cv::rectangle(this->presentationFrame, minRect[i], this->color_red,1,8,0);
+
+
     }
-
-
-
-
+    //printf ("Checkpoint 5\n");
+    cv::imwrite("CheckOutput.png",this->presentationFrame);
     debugShow(this->presentationFrame);
+
+
+    //debugShow(this->presentationFrame);
 
 
 
@@ -268,10 +270,10 @@ void L3Localizer::CalculateInitialBubbleParams(void )
 void L3Localizer::LocalizeOMatic(std::string imageStorePath)
 {
 
-    debugShow(this->TrainedData->TrainedAvgImage);
+    //debugShow(this->TrainedData->TrainedAvgImage);
     cv::Mat sigmaImageRaw = this->TrainedData->TrainedSigmaImage;
     //sigmaImageRaw *= 10;
-    debugShow(sigmaImageRaw);
+    //debugShow(sigmaImageRaw);
 
 
 
@@ -291,7 +293,7 @@ void L3Localizer::LocalizeOMatic(std::string imageStorePath)
         this->ComparisonFrame = lbpImageSingleChan(comparisonFrame);
 
     } else {
-        this->triggerFrame = cv::imread(this->ImageDir + this->CameraFrames[this->MatTrigFrame],0);
+        this->triggerFrame = cv::imread(this->ImageDir + this->CameraFrames[this->MatTrigFrame+1],0);
         this->presentationFrame = triggerFrame.clone();
         cv::cvtColor(this->presentationFrame, this->presentationFrame, cv::COLOR_GRAY2BGR);
         this->ComparisonFrame = cv::imread(this->ImageDir + this->CameraFrames[0],0);

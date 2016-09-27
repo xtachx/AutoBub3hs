@@ -111,19 +111,6 @@ depend:
 .PHONY : depend
 
 #=============================================================================
-# Target rules for targets named abub3
-
-# Build rule for target.
-abub3: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 abub3
-.PHONY : abub3
-
-# fast build rule for target.
-abub3/fast:
-	$(MAKE) -f CMakeFiles/abub3.dir/build.make CMakeFiles/abub3.dir/build
-.PHONY : abub3/fast
-
-#=============================================================================
 # Target rules for targets named lbpuser
 
 # Build rule for target.
@@ -135,6 +122,45 @@ lbpuser: cmake_check_build_system
 lbpuser/fast:
 	$(MAKE) -f CMakeFiles/lbpuser.dir/build.make CMakeFiles/lbpuser.dir/build
 .PHONY : lbpuser/fast
+
+#=============================================================================
+# Target rules for targets named AbubEntropySubsystem
+
+# Build rule for target.
+AbubEntropySubsystem: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 AbubEntropySubsystem
+.PHONY : AbubEntropySubsystem
+
+# fast build rule for target.
+AbubEntropySubsystem/fast:
+	$(MAKE) -f CMakeFiles/AbubEntropySubsystem.dir/build.make CMakeFiles/AbubEntropySubsystem.dir/build
+.PHONY : AbubEntropySubsystem/fast
+
+#=============================================================================
+# Target rules for targets named AbubUtility
+
+# Build rule for target.
+AbubUtility: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 AbubUtility
+.PHONY : AbubUtility
+
+# fast build rule for target.
+AbubUtility/fast:
+	$(MAKE) -f CMakeFiles/AbubUtility.dir/build.make CMakeFiles/AbubUtility.dir/build
+.PHONY : AbubUtility/fast
+
+#=============================================================================
+# Target rules for targets named abub3
+
+# Build rule for target.
+abub3: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 abub3
+.PHONY : abub3
+
+# fast build rule for target.
+abub3/fast:
+	$(MAKE) -f CMakeFiles/abub3.dir/build.make CMakeFiles/abub3.dir/build
+.PHONY : abub3/fast
 
 AutoBubStart3.o: AutoBubStart3.cpp.o
 
@@ -162,6 +188,33 @@ AutoBubStart3.s: AutoBubStart3.cpp.s
 AutoBubStart3.cpp.s:
 	$(MAKE) -f CMakeFiles/abub3.dir/build.make CMakeFiles/abub3.dir/AutoBubStart3.cpp.s
 .PHONY : AutoBubStart3.cpp.s
+
+ImageEntropyMethods/ImageEntropyMethods.o: ImageEntropyMethods/ImageEntropyMethods.cpp.o
+
+.PHONY : ImageEntropyMethods/ImageEntropyMethods.o
+
+# target to build an object file
+ImageEntropyMethods/ImageEntropyMethods.cpp.o:
+	$(MAKE) -f CMakeFiles/AbubEntropySubsystem.dir/build.make CMakeFiles/AbubEntropySubsystem.dir/ImageEntropyMethods/ImageEntropyMethods.cpp.o
+.PHONY : ImageEntropyMethods/ImageEntropyMethods.cpp.o
+
+ImageEntropyMethods/ImageEntropyMethods.i: ImageEntropyMethods/ImageEntropyMethods.cpp.i
+
+.PHONY : ImageEntropyMethods/ImageEntropyMethods.i
+
+# target to preprocess a source file
+ImageEntropyMethods/ImageEntropyMethods.cpp.i:
+	$(MAKE) -f CMakeFiles/AbubEntropySubsystem.dir/build.make CMakeFiles/AbubEntropySubsystem.dir/ImageEntropyMethods/ImageEntropyMethods.cpp.i
+.PHONY : ImageEntropyMethods/ImageEntropyMethods.cpp.i
+
+ImageEntropyMethods/ImageEntropyMethods.s: ImageEntropyMethods/ImageEntropyMethods.cpp.s
+
+.PHONY : ImageEntropyMethods/ImageEntropyMethods.s
+
+# target to generate assembly for a file
+ImageEntropyMethods/ImageEntropyMethods.cpp.s:
+	$(MAKE) -f CMakeFiles/AbubEntropySubsystem.dir/build.make CMakeFiles/AbubEntropySubsystem.dir/ImageEntropyMethods/ImageEntropyMethods.cpp.s
+.PHONY : ImageEntropyMethods/ImageEntropyMethods.cpp.s
 
 LBP/LBPUser.o: LBP/LBPUser.cpp.o
 
@@ -217,6 +270,60 @@ LBP/lbp.cpp.s:
 	$(MAKE) -f CMakeFiles/lbpuser.dir/build.make CMakeFiles/lbpuser.dir/LBP/lbp.cpp.s
 .PHONY : LBP/lbp.cpp.s
 
+ParseFolder/ParseFolder.o: ParseFolder/ParseFolder.cpp.o
+
+.PHONY : ParseFolder/ParseFolder.o
+
+# target to build an object file
+ParseFolder/ParseFolder.cpp.o:
+	$(MAKE) -f CMakeFiles/AbubUtility.dir/build.make CMakeFiles/AbubUtility.dir/ParseFolder/ParseFolder.cpp.o
+.PHONY : ParseFolder/ParseFolder.cpp.o
+
+ParseFolder/ParseFolder.i: ParseFolder/ParseFolder.cpp.i
+
+.PHONY : ParseFolder/ParseFolder.i
+
+# target to preprocess a source file
+ParseFolder/ParseFolder.cpp.i:
+	$(MAKE) -f CMakeFiles/AbubUtility.dir/build.make CMakeFiles/AbubUtility.dir/ParseFolder/ParseFolder.cpp.i
+.PHONY : ParseFolder/ParseFolder.cpp.i
+
+ParseFolder/ParseFolder.s: ParseFolder/ParseFolder.cpp.s
+
+.PHONY : ParseFolder/ParseFolder.s
+
+# target to generate assembly for a file
+ParseFolder/ParseFolder.cpp.s:
+	$(MAKE) -f CMakeFiles/AbubUtility.dir/build.make CMakeFiles/AbubUtility.dir/ParseFolder/ParseFolder.cpp.s
+.PHONY : ParseFolder/ParseFolder.cpp.s
+
+common/UtilityFunctions.o: common/UtilityFunctions.cpp.o
+
+.PHONY : common/UtilityFunctions.o
+
+# target to build an object file
+common/UtilityFunctions.cpp.o:
+	$(MAKE) -f CMakeFiles/AbubUtility.dir/build.make CMakeFiles/AbubUtility.dir/common/UtilityFunctions.cpp.o
+.PHONY : common/UtilityFunctions.cpp.o
+
+common/UtilityFunctions.i: common/UtilityFunctions.cpp.i
+
+.PHONY : common/UtilityFunctions.i
+
+# target to preprocess a source file
+common/UtilityFunctions.cpp.i:
+	$(MAKE) -f CMakeFiles/AbubUtility.dir/build.make CMakeFiles/AbubUtility.dir/common/UtilityFunctions.cpp.i
+.PHONY : common/UtilityFunctions.cpp.i
+
+common/UtilityFunctions.s: common/UtilityFunctions.cpp.s
+
+.PHONY : common/UtilityFunctions.s
+
+# target to generate assembly for a file
+common/UtilityFunctions.cpp.s:
+	$(MAKE) -f CMakeFiles/AbubUtility.dir/build.make CMakeFiles/AbubUtility.dir/common/UtilityFunctions.cpp.s
+.PHONY : common/UtilityFunctions.cpp.s
+
 # Help Target
 help:
 	@echo "The following are some of the valid targets for this Makefile:"
@@ -225,17 +332,28 @@ help:
 	@echo "... depend"
 	@echo "... edit_cache"
 	@echo "... rebuild_cache"
-	@echo "... abub3"
 	@echo "... lbpuser"
+	@echo "... AbubEntropySubsystem"
+	@echo "... AbubUtility"
+	@echo "... abub3"
 	@echo "... AutoBubStart3.o"
 	@echo "... AutoBubStart3.i"
 	@echo "... AutoBubStart3.s"
+	@echo "... ImageEntropyMethods/ImageEntropyMethods.o"
+	@echo "... ImageEntropyMethods/ImageEntropyMethods.i"
+	@echo "... ImageEntropyMethods/ImageEntropyMethods.s"
 	@echo "... LBP/LBPUser.o"
 	@echo "... LBP/LBPUser.i"
 	@echo "... LBP/LBPUser.s"
 	@echo "... LBP/lbp.o"
 	@echo "... LBP/lbp.i"
 	@echo "... LBP/lbp.s"
+	@echo "... ParseFolder/ParseFolder.o"
+	@echo "... ParseFolder/ParseFolder.i"
+	@echo "... ParseFolder/ParseFolder.s"
+	@echo "... common/UtilityFunctions.o"
+	@echo "... common/UtilityFunctions.i"
+	@echo "... common/UtilityFunctions.s"
 .PHONY : help
 
 
