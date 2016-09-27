@@ -31,11 +31,8 @@
 
 #include "AnalyzerUnit.hpp"
 #include "AlgorithmTraining/Trainer.hpp"
+#include "PICOFormatWriter/PICOFormatWriter.hpp"
 
-
-
-/*Forward declaration of debugShow*/
-//void debugShow(cv::Mat&);
 
 const int evalEntropyThresholdFrames = 2;
 std::vector<int> badEvents;
@@ -69,19 +66,10 @@ int main(int argc, char** argv)
 
     std::string eventDir=dataLoc+run_number+"/";
 
-    FILE * pFile;
-    std::string abubOutFilename = out_dir+"abub3_"+run_number+".txt";
-    pFile = fopen (abubOutFilename.c_str(),"w");
-    fprintf(pFile, "%s\n", "Output of AutoBub v3 - the automatic unified bubble finder code by Pitam, using OpenCV.");
 
-    /*The output needs to be in the PICO output format, that goes as
-     *run  ev  ibub  frame0  frame1  nbub0  nbub1  nbub  npix0  hori0  vert0  horivar0  vertvar0  npix1  hori1  vert1  horivar1  vertvar1
-     */
-
-    // Hugh edit, to try to align with getBub (I know, I know)
-    fprintf(pFile, "%s\n", "run ev ibub nbub frame0 nbub0 frame1 nbub1 hori0 vert0 smajdiam0_a smindiam0_a hori1 vert1 smajdiam1_a smindiam1_a");
-    fprintf(pFile, "%s\n2\n\n\n", "%12s %5d %d %d %d %d %d %d %.02f %.02f %.02f %.02f %.02f %.02f %.02f %.02f");
-
+    /*I anticipate the object to become large with many bubbles, so I wanted it on the heap*/
+    OutputWriter *PICO60Output = new OutputWriter(out_dir, run_number);
+    PICO60Output->writeHeader();
 
     /*Construct list of events*/
     std::vector<std::string> EventList;
@@ -98,7 +86,6 @@ int main(int argc, char** argv)
     /*Learn Mode
      *Train on a given set of images for background subtract
      */
-    //printf("Eventlist 1: %s\n",EventList[0].c_str());
     Trainer *TrainC0 = new Trainer(0, EventList, eventDir);
     TrainC0->MakeAvgSigmaImage(false);
 
@@ -136,6 +123,7 @@ int main(int argc, char** argv)
         AnalyzerC0->FindTriggerFrame();
         cout<<"Trigger Frame: "<<AnalyzerC0->MatTrigFrame<<"\n";
         AnalyzerC0->LocalizeOMatic(out_dir);
+        //PICO60Output->stageCameraOutput(,0)
 
 
         /* ***************************
@@ -152,62 +140,17 @@ int main(int argc, char** argv)
 
 
 
-//        /* ************************************
-//         ********* Camera 1 Operations ******
-//         **************************************/
-//        //Generate File lists to process for this event
-//        GetFileLists(imageDir.c_str(), FileList_cam1, statuscode, "cam1image");
-//        std::sort(FileList_cam1.begin(), FileList_cam1.end(), sortFunc);
-//        //Memory to store the processed locationstd::vector<cv::RotatedRect> BubblePixelPos1;
-//        std::vector<cv::RotatedRect> BubblePixelPos1;
-//        //Perform search
-//        SearchForBubbleInFrame(FileList_cam1, imageDir, EventList[evi], BubblePixelPos1, trigFrame_1, 1, markedTriggerFrame1);
-//        img_mask1.release();
-//        //img_bkgmodel1.release();
-//
-//        //postprocess
-//        std::sort(BubblePixelPos1.begin(), BubblePixelPos1.end(), BubblePosZsort);
-//        //run ev nbub frame0 nbub0 frame1 nbub1 ibub pixelx pixely smajdiam smindiam pixelx pixely smajdiam smindiam
-//
-//        int nbub_cam1 = BubblePixelPos1.size();
-//
-//
-//        /* Debug code to check the bubble output ont he fly ******
-//        if (nbub_cam0 != 0){
-//            for (int i=0; i<nbub_cam0; i++)
-//                std::cout<<"C0 Cent X: "<<BubblePixelPos0[i].center.x<<" | Cent Y: "<<BubblePixelPos0[i].center.y <<"\n";
-//        }
-//
-//        if (nbub_cam1 != 0){
-//            for (int i=0; i<nbub_cam1; i++)
-//                std::cout<<"C1 Cent X: "<<BubblePixelPos1[i].center.x<<" | Cent Y: "<<BubblePixelPos1[i].center.y <<"\n";
-//        }
-//
-//        /* ************** */
-//
-//
-//        /* *************** Debug output pictures ************/
-//        std::ostringstream cam1loc;
-//        cam1loc<<out_dir<<"1/"<<evi<<".png";
-//        cv::imwrite(cam1loc.str(), markedTriggerFrame0);
-//
-//        std::ostringstream cam2loc;
-//        cam2loc<<out_dir<<"2/"<<evi<<".png";
-//        cv::imwrite(cam2loc.str(), markedTriggerFrame1);
-//
-//        /* ***************************************************/
-//
 
-
-
-//       delete AnalyzerC0;
+        delete AnalyzerC0;
+        delete AnalyzerC2;
     }
 
     /*GC*/
-    //delete TrainC0;
+    delete TrainC0;
     delete TrainC2;
+    delete PICO60Output;
 
-    fclose(pFile);
+
     printf("AutoBub done analyzing this run. Thank you.\n");
     return 0;
 
