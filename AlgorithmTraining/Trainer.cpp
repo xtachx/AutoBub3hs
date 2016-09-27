@@ -6,6 +6,7 @@
 
 #include <opencv2/opencv.hpp>
 #include "Trainer.hpp"
+#include "../LBP/LBPUser.hpp"
 
 
 //#include "ImageEntropyMethods/ImageEntropyMethods.hpp"
@@ -92,13 +93,14 @@ void Trainer::ParseAndSortFramesInFolder(std::string searchPattern, std::string 
  */
 
 
-void Trainer::MakeAvgSigmaImage(void )
+void Trainer::MakeAvgSigmaImage(bool PerformLBPOnImages=false)
 {
 
+    this->isLBPApplied = PerformLBPOnImages;
     /*Declare memory to store all the images coming in*/
     std::vector<cv::Mat> backgroundImagingArray;
 
-    cv::Mat tempImagingProcess;
+    cv::Mat tempImagingProcess, tempImagingLBP;
     int rows, cols;
 
     /*Store all the images*/
@@ -109,14 +111,23 @@ void Trainer::MakeAvgSigmaImage(void )
         ThisEventDir = this->EventDir+EventList[i]+"/Images/";
         printf("Now processing %s\n", ThisEventDir.c_str());
 
-        this->ParseAndSortFramesInFolder("cam0_image", ThisEventDir);
+        std::string ImageFilePattern = "cam"+std::to_string(this->camera)+"_image";
+        this->ParseAndSortFramesInFolder(ImageFilePattern, ThisEventDir);
 
         for (std::vector<int>::iterator it = TrainingSequence.begin(); it !=TrainingSequence.end(); it++)
         {
             thisEventLocation = ThisEventDir + this->CameraFrames[*it];
             //std::cout<<"Frame: "<<thisEventLocation<<"\n";
             tempImagingProcess = cv::imread(thisEventLocation, 0);
-            backgroundImagingArray.push_back(tempImagingProcess);
+
+            if (PerformLBPOnImages){
+                tempImagingLBP = lbpImageSingleChan(tempImagingProcess);
+                backgroundImagingArray.push_back(tempImagingLBP);
+            }
+            else
+            {
+                backgroundImagingArray.push_back(tempImagingProcess);
+            }
         }
         /*GC*/
         this->CameraFrames.clear();
@@ -130,13 +141,13 @@ void Trainer::MakeAvgSigmaImage(void )
     rows = backgroundImagingArray[0].rows;
     cols = backgroundImagingArray[0].cols;
 
-    printf ("Rows %d cols %d\n", rows, cols);
+    //printf ("Rows %d cols %d, TotalImageSize: %d", rows, cols, backgroundImagingArray.size());
 
 
     /*Declare new variables for making the analyzed matrix*/
     std::vector<cv::Mat>::size_type numImagesToProcess = backgroundImagingArray.size();
 
-    cv::Mat sigmaImageProcess = cv::Mat::zeros(rows, cols, CV_32F);
+    cv::Mat sigmaImageProcess = cv::Mat::zeros(rows, cols, CV_8U);
     cv::Mat meanImageProcess = cv::Mat::zeros(rows, cols, CV_8U);
 
 
@@ -175,7 +186,7 @@ void Trainer::MakeAvgSigmaImage(void )
             //printf("\n Mean: %f | Var %f | Sig %f \n", temp_mean, temp_variance, temp_sigma);
 
             /*Values in a CV_32F image must be between 0 and 1. Since the scale was 0-255 for pixels, we normalize it by dividing with 255*/
-            sigmaImageProcess.at<float>(row, col) =  temp_sigma/255.0;
+            sigmaImageProcess.at<uchar>(row, col) =  (int)temp_sigma;
             meanImageProcess.at<uchar>(row, col) =  temp_mean;
 
 
@@ -191,15 +202,15 @@ void Trainer::MakeAvgSigmaImage(void )
         }
     }
 
-    sigmaImageProcess = sigmaImageProcess*100;
-    cv::Mat sigmaImageWrite, meanImageWrite;
-    sigmaImageProcess.convertTo(sigmaImageWrite, CV_8U, 255.0);
+    //sigmaImageProcess = sigmaImageProcess*100;
+    //cv::Mat sigmaImageWrite, meanImageWrite;
+    //sigmaImageProcess.convertTo(sigmaImageWrite, CV_8U, 255.0);
     //meanImageProcess.convertTo(meanImageWrite, CV_8U, 255.0);
 
     this->TrainedAvgImage = meanImageProcess;
-    this->TrainedSigmaImage = sigmaImageWrite;
-    cv::imwrite( "SigmaMap.png", sigmaImageWrite );
-    cv::imwrite( "MeanMap.png", meanImageProcess );
+    this->TrainedSigmaImage = sigmaImageProcess;
+    //cv::imwrite( "SigmaMap.png", sigmaImageWrite );
+    //cv::imwrite( "MeanMap.png", meanImageProcess );
 
 }
 

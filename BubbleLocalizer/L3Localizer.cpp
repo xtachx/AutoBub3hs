@@ -31,6 +31,7 @@
 #include "../LBP/LBPUser.hpp"
 #include "../common/UtilityFunctions.hpp"
 #include "../AnalyzerUnit.hpp"
+#include "../AlgorithmTraining/Trainer.hpp"
 
 
 
@@ -43,7 +44,7 @@
  * ******************************************************************************/
 
 
-L3Localizer::L3Localizer(std::string EventID, std::string ImageDir, int CameraNumber, bool nonStopPref):AnalyzerUnit(EventID, ImageDir, CameraNumber)
+L3Localizer::L3Localizer(std::string EventID, std::string ImageDir, int CameraNumber, bool nonStopPref, Trainer** TrainedData):AnalyzerUnit(EventID, ImageDir, CameraNumber, TrainedData)
 {
 
 
@@ -213,70 +214,52 @@ void L3Localizer::CalculateInitialBubbleParams(void )
 
 
     /*Construct the frame differences and LBPImage Frames*/
-    FrameDiffTrigNext = FrameAfterTrigger - this->ComparisonFrame;
-    cv::absdiff(FrameAfterTrigger, this->ComparisonFrame, FrameDiffTrig);
+    //cv::absdiff(FrameAfterTrigger, this->ComparisonFrame, FrameDiffTrigNext);
+    cv::absdiff(this->triggerFrame, this->ComparisonFrame, FrameDiffTrig);
     //FrameDiffTrig =  this->triggerFrame - this->ComparisonFrame;
 
 
-    //cv::normalize(FrameDiffTrig, FrameDiffTrig, 0, 255, NORM_MINMAX);
-    //cv::normalize(FrameDiffTrigNext, FrameDiffTrigNext, 0, 255, NORM_MINMAX);
+    printf("New Stuff: \n");
+    cv::Mat NewFrameDiffTrig, overTheSigma, LBPImageTrigBeforeBlur, LBPImageTrigAfterBlur;
+    cv::absdiff(this->triggerFrame, this->TrainedData->TrainedAvgImage, NewFrameDiffTrig);
 
-    std::cout<<"The next trigger is: "<<this->CameraFrames[this->MatTrigFrame]<<"\n";
-    //debugShow(FrameAfterTrigger);
-    //debugShow(FrameDiffTrigNext);
+    overTheSigma = NewFrameDiffTrig - 6*this->TrainedData->TrainedSigmaImage;
 
-    //Denoising
-    //int rows = FrameDiffTrig.rows;
-    //int cols = FrameDiffTrig.cols;
+    //LBPImageTrigBeforeBlur = lbpImageSingleChan(overTheSigma);
+    cv::blur(overTheSigma,overTheSigma, cv::Size(3,3));
+    //LBPImageTrigAfterBlur = lbpImageSingleChan(overTheSigma);
 
-    /*Kernel Definition*/
-    int boxcar1_width = 3;
-    int boxcar2_width = 50;
-    int guard_band=2;
-    cv::Mat boxCarKernel;
+    cv::threshold(overTheSigma, overTheSigma, 3, 255, CV_THRESH_TOZERO);
+    cv::threshold(overTheSigma, overTheSigma, 0, 255, CV_THRESH_BINARY|CV_THRESH_OTSU);
 
-    cv::Mat boxCarKernel2 = -1.0*cv::Mat::ones(1,boxcar2_width,CV_8U);
-    cv::Mat boxCarKernelG = cv::Mat::zeros(1, guard_band+1+guard_band,CV_8U);
-    cv::Mat boxCarKernel1 = cv::Mat::ones(1, boxcar1_width,CV_8U);
 
-    cv::hconcat(boxCarKernel2,boxCarKernelG,boxCarKernel); // horizontal concatenation
-    cv::hconcat(boxCarKernel,boxCarKernel1,boxCarKernel); // horizontal concatenation
 
-    //boxCarKernel /= (float)(boxcar2_width+boxcar1_width);
-    /* **************************** */
+    //debugShow(NewFrameDiffTrig);
+    //cv::normalize(overTheSigma,overTheSigma,0,255,NORM_MINMAX);
 
-    cv::filter2D(FrameDiffTrig, FrameDiffTrig, -1 , boxCarKernel, Point(boxcar2_width+guard_band-1, 0), 0, BORDER_DEFAULT );
 
-    //std::cout << "M = "<< std::endl << " "  << boxCarKernel << std::endl << std::endl;
-    //FrameDiffTrig /= (boxcar2_width+boxcar1_width);
-    cv::threshold(FrameDiffTrig, FrameDiffTrig, 30, 255, CV_THRESH_TOZERO);
-    //cv::normalize(FrameDiffTrig,FrameDiffTrig, 0, 255, NORM_L2);
+    std::vector<cv::Vec3f> circles;
+
+    /// Apply the Hough Transform to find the circles
+    cv::HoughCircles( overTheSigma, circles, CV_HOUGH_GRADIENT, 1, overTheSigma.rows/8, 200, 100, 0, 0 );
+
+    /// Draw the circles detected
+    for( size_t i = 0; i < circles.size(); i++ )
+    {
+        printf("Circle %d\n", i);
+        cv::Point center(cvRound(circles[i][0]), cvRound(circles[i][1]));
+        int radius = cvRound(circles[i][2]);
+        // circle center
+        //circle( src, center, 3, Scalar(0,255,0), -1, 8, 0 );
+        // circle outline
+        cv::circle( this->presentationFrame, center, radius, this->color_red, 2, 8, 0 );
+    }
+
+
+
+
     debugShow(this->presentationFrame);
-    FrameDiffTrig=10.0*FrameDiffTrig;
-    debugShow(FrameDiffTrig);
 
-
-
-    LBPImageTrigNext = lbpImageSingleChan(FrameDiffTrigNext);
-    LBPImageTrig = lbpImageSingleChan(FrameDiffTrig);
-
-
-    debugShow(LBPImageTrig);
-    //debugShow(LBPImageTrigNext);
-
-    /*SAVE POINT 1*/
-    if (!this->nonStopMode) cv::imwrite("SavePoint1_LBPImageTrig.jpg", LBPImageTrig);
-    if (!this->nonStopMode) cv::imwrite("SavePoint1_LBPImageTrigNext.jpg", LBPImageTrigNext);
-
-    //showHistogramImage(LBPImageTrigNext);
-
-    //do
-    //{
-    //    this->rem_unique(minRect, L2SearchAreasFixed);
-    //}
-    //while (minRect.size()>=1);
-
-    //L2SearchAreasFixed = minRect ;
 
 
 }
@@ -285,12 +268,34 @@ void L3Localizer::CalculateInitialBubbleParams(void )
 void L3Localizer::LocalizeOMatic(std::string imageStorePath)
 {
 
+    debugShow(this->TrainedData->TrainedAvgImage);
+    cv::Mat sigmaImageRaw = this->TrainedData->TrainedSigmaImage;
+    //sigmaImageRaw *= 10;
+    debugShow(sigmaImageRaw);
+
+
+
+
     if (!this->okToProceed) return;
     /*Assign the three useful frames*/
-    this->triggerFrame = cv::imread(this->ImageDir + this->CameraFrames[this->MatTrigFrame],0);
-    this->presentationFrame = triggerFrame.clone();
-    this->ComparisonFrame = cv::imread(this->ImageDir + this->CameraFrames[0],0);
 
+    if (this->TrainedData->isLBPApplied){
+
+        cv::Mat triggerFrame, comparisonFrame;
+
+        triggerFrame = cv::imread(this->ImageDir + this->CameraFrames[this->MatTrigFrame],0);
+        comparisonFrame = cv::imread(this->ImageDir + this->CameraFrames[0],0);
+
+        this->triggerFrame = lbpImageSingleChan(triggerFrame);
+        this->presentationFrame = triggerFrame.clone();
+        this->ComparisonFrame = lbpImageSingleChan(comparisonFrame);
+
+    } else {
+        this->triggerFrame = cv::imread(this->ImageDir + this->CameraFrames[this->MatTrigFrame],0);
+        this->presentationFrame = triggerFrame.clone();
+        cv::cvtColor(this->presentationFrame, this->presentationFrame, cv::COLOR_GRAY2BGR);
+        this->ComparisonFrame = cv::imread(this->ImageDir + this->CameraFrames[0],0);
+    }
     /*Run the analyzer series*/
     this->numBubbleMultiplicity=0;
     this->CalculateInitialBubbleParams();

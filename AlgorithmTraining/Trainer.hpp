@@ -29,6 +29,8 @@ class Trainer{
         cv::Mat TrainedAvgImage;
         cv::Mat TrainedSigmaImage;
 
+        bool isLBPApplied = false;
+
         /*Directory structure required for the training set*/
         std::vector<std::string> EventList;
 
@@ -40,7 +42,7 @@ class Trainer{
         ~Trainer(void );
 
         /*Compute the mean and std*/
-        void MakeAvgSigmaImage(void);
+        void MakeAvgSigmaImage(bool );
 
 
 };

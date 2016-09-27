@@ -7,7 +7,7 @@ set(CMAKE_MODULE_PATH "cmake_modules")
 #MESSAGE( STATUS "Found : ${SQLITE3_LIBRARIES}" )
 
 
-SET(CMAKE_CXX_FLAGS "-std=gnu++1y -O2 -march=ivybridge -m64")
+SET(CMAKE_CXX_FLAGS "-std=gnu++1y -O2 -march=native -m64")
 
 file(GLOB LBP_HEADERS ${CMAKE_CURRENT_SOURCE_DIR}/LBP/*.hpp)
 file(GLOB LBP_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/LBP/*.cpp)

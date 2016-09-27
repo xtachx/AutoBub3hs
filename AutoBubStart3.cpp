@@ -98,10 +98,18 @@ int main(int argc, char** argv)
     /*Learn Mode
      *Train on a given set of images for background subtract
      */
-    printf("Eventlist 1: %s\n",EventList[0].c_str());
+    //printf("Eventlist 1: %s\n",EventList[0].c_str());
     Trainer *TrainC0 = new Trainer(0, EventList, eventDir);
-    TrainC0->MakeAvgSigmaImage();
+    TrainC0->MakeAvgSigmaImage(false);
 
+    //Trainer *TrainC1 = new Trainer(1, EventList, eventDir);
+    //TrainC1->MakeAvgSigmaImage();
+
+    Trainer *TrainC2 = new Trainer(2, EventList, eventDir);
+    TrainC2->MakeAvgSigmaImage(false);
+
+    //Trainer *TrainC3 = new Trainer(3, EventList, eventDir);
+    //TrainC3->MakeAvgSigmaImage();
 
     /*Detect mode
      *Iterate through all the events in the list and detect bubbles in them one by one
@@ -111,7 +119,11 @@ int main(int argc, char** argv)
     for (auto evi = 0; evi < EventList.size(); evi++) {
         std::string imageDir=eventDir+EventList[evi]+"/Images/";
         std::cout<<"Processing: "<<"\n";
-        AnalyzerUnit *AnalyzerC0 = new L3Localizer(EventList[evi], imageDir, 0, false); /*EventID, imageDir and camera number*/
+        AnalyzerUnit *AnalyzerC0 = new L3Localizer(EventList[evi], imageDir, 0, false, &TrainC0); /*EventID, imageDir and camera number*/
+        //AnalyzerUnit *AnalyzerC1 = new L3Localizer(EventList[evi], imageDir, 1, false, &TrainC1); /*EventID, imageDir and camera number*/
+        AnalyzerUnit *AnalyzerC2 = new L3Localizer(EventList[evi], imageDir, 2, false, &TrainC2); /*EventID, imageDir and camera number*/
+        //AnalyzerUnit *AnalyzerC3 = new L3Localizer(EventList[evi], imageDir, 3, false, &TrainC3); /*EventID, imageDir and camera number*/
+
 
 
 
@@ -120,10 +132,23 @@ int main(int argc, char** argv)
          ********************************/
 
         //Generate File lists to process for this event
-        AnalyzerC0->ParseAndSortFramesInFolder("cam0_image");
+        AnalyzerC0->ParseAndSortFramesInFolder();
         AnalyzerC0->FindTriggerFrame();
         cout<<"Trigger Frame: "<<AnalyzerC0->MatTrigFrame<<"\n";
-        AnalyzerC0->LocalizeOMatic("checkrun/");
+        AnalyzerC0->LocalizeOMatic(out_dir);
+
+
+        /* ***************************
+         * ***** Camera 2 Operations ******
+         ********************************/
+
+        //Generate File lists to process for this event
+        //AnalyzerC2->ParseAndSortFramesInFolder();
+        //AnalyzerC2->FindTriggerFrame();
+        //cout<<"Trigger Frame: "<<AnalyzerC2->MatTrigFrame<<"\n";
+        //AnalyzerC2->LocalizeOMatic(out_dir);
+
+
 
 
 
@@ -179,8 +204,8 @@ int main(int argc, char** argv)
     }
 
     /*GC*/
-    delete TrainC0;
-
+    //delete TrainC0;
+    delete TrainC2;
 
     fclose(pFile);
     printf("AutoBub done analyzing this run. Thank you.\n");

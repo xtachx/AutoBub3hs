@@ -19,7 +19,7 @@
 /*Includes*/
 #include <opencv2/opencv.hpp>
 #include "../AnalyzerUnit.hpp"
-
+#include "../AlgorithmTraining/Trainer.hpp"
 
 /*Memory Allocations*/
 
@@ -59,7 +59,7 @@ class L3Localizer: public AnalyzerUnit{
 
     public:
         /*Constructor and deconstructor*/
-        L3Localizer(std::string, std::string, int, bool nonStopPref = true );
+        L3Localizer(std::string, std::string, int, bool nonStopPref, Trainer** );
         ~L3Localizer();
 
         /*Public functions exposing the interface*/

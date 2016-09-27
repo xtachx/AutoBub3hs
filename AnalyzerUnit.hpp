@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <string>
+#include "AlgorithmTraining/Trainer.hpp"
 
 #include <opencv2/opencv.hpp>
 
@@ -36,11 +37,11 @@ class AnalyzerUnit{
 
     public:
         /*Constructor and deconstructor*/
-        AnalyzerUnit(std::string, std::string, int );
+        AnalyzerUnit(std::string, std::string, int, Trainer** );
         ~AnalyzerUnit(void );
 
         /*Function to parse and sort the triggers from the folder and the directory where the images are stored*/
-        void ParseAndSortFramesInFolder(std::string );
+        void ParseAndSortFramesInFolder( void );
 
         /*Produces the text output for PICO format*/
         void ProduceOutput(void );
@@ -55,6 +56,7 @@ class AnalyzerUnit{
         /*Overloaded function based on the analyzer*/
         virtual void LocalizeOMatic(std::string )=0; //EventList[evi] is being passed. Why?
 
+        Trainer* TrainedData;
         /*Training Data*/
 
 

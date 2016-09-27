@@ -15,12 +15,14 @@
 
 
 
-AnalyzerUnit::AnalyzerUnit(std::string EventID, std::string ImageDir, int CameraNumber)
+AnalyzerUnit::AnalyzerUnit(std::string EventID, std::string ImageDir, int CameraNumber, Trainer** TrainedData)
 {
     /*Give the properties required to make the object - the identifiers i.e. the camera number, and location*/
     this->ImageDir=ImageDir;
     this->CameraNumber=CameraNumber;
     this->EventID=EventID;
+
+    this->TrainedData = *TrainedData;
 
 }
 
@@ -39,8 +41,10 @@ AnalyzerUnit::~AnalyzerUnit(void ){}
  */
 
 
-void AnalyzerUnit::ParseAndSortFramesInFolder(std::string searchPattern )
+void AnalyzerUnit::ParseAndSortFramesInFolder( void )
 {
+
+    std::string searchPattern = "cam"+std::to_string(this->CameraNumber)+"_image";
 
     /*Function to Generate File Lists*/
     {
@@ -114,18 +118,19 @@ void AnalyzerUnit::FindTriggerFrame(void ){
     /*Start by flagging that a bubble wasnt found, flag gets changed to 0 if all goes well*/
     this->TriggerFrameIdentificationStatus=2;
 
-    for (int i = 1; i < this->CameraFrames.size(); i++) {
+    //for (int i = 1; i < this->CameraFrames.size(); i++) {
+    for (int i = 1; i < 30; i++) {
 
         /*The name and load to memory evalImage*/
         std::string evalImg = this->ImageDir + this->CameraFrames[i];
         workingFrame = cv::imread(evalImg.c_str());
 
         /*BackgroundSubtract*/
-        img_mask0 = workingFrame - comparisonFrame;
+        cv::absdiff(workingFrame, comparisonFrame, img_mask0);
 
         /*Find LBP and then calculate Entropy*/
-        img_mask1 = lbpImage(img_mask0);
-        singleEntropy = calculateEntropyFrame(img_mask1);
+        //img_mask1 = lbpImage(img_mask0);
+        singleEntropy = calculateEntropyFrame(img_mask0);
 
         /* ****************
          * Debug Point here
@@ -150,7 +155,7 @@ void AnalyzerUnit::FindTriggerFrame(void ){
 
 
         /*Nothing works better than manual entropy settings. :-(*/
-        if (singleEntropy < 0.02 and i > this->minEvalFrameNumber) {
+        if (singleEntropy > 0.0003 and i > this->minEvalFrameNumber) {
             this->TriggerFrameIdentificationStatus = 0;
             this->MatTrigFrame = i;
             break;
