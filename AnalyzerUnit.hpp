@@ -55,6 +55,7 @@ class AnalyzerUnit{
 
         /*Overloaded function based on the analyzer*/
         virtual void LocalizeOMatic(std::string )=0; //EventList[evi] is being passed. Why?
+        std::vector<cv::Rect> bubbleRects;
 
         Trainer* TrainedData;
         /*Training Data*/

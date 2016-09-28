@@ -103,7 +103,7 @@ int main(int argc, char** argv)
      *A seprate procedure will store them to a file at the end
      */
 
-    for (auto evi = 0; evi < EventList.size(); evi++) {
+    for (int evi = 0; evi < EventList.size(); evi++) {
         std::string imageDir=eventDir+EventList[evi]+"/Images/";
         std::cout<<"Processing: "<<"\n";
         AnalyzerUnit *AnalyzerC0 = new L3Localizer(EventList[evi], imageDir, 0, false, &TrainC0); /*EventID, imageDir and camera number*/
@@ -123,7 +123,7 @@ int main(int argc, char** argv)
         AnalyzerC0->FindTriggerFrame();
         cout<<"Trigger Frame: "<<AnalyzerC0->MatTrigFrame<<"\n";
         AnalyzerC0->LocalizeOMatic(out_dir);
-        //PICO60Output->stageCameraOutput(,0)
+        PICO60Output->stageCameraOutput(AnalyzerC0->bubbleRects,0, AnalyzerC0->MatTrigFrame, evi);
 
 
         /* ***************************
@@ -131,10 +131,11 @@ int main(int argc, char** argv)
          ********************************/
 
         //Generate File lists to process for this event
-        //AnalyzerC2->ParseAndSortFramesInFolder();
-        //AnalyzerC2->FindTriggerFrame();
-        //cout<<"Trigger Frame: "<<AnalyzerC2->MatTrigFrame<<"\n";
-        //AnalyzerC2->LocalizeOMatic(out_dir);
+        AnalyzerC2->ParseAndSortFramesInFolder();
+        AnalyzerC2->FindTriggerFrame();
+        cout<<"Trigger Frame: "<<AnalyzerC2->MatTrigFrame<<"\n";
+        AnalyzerC2->LocalizeOMatic(out_dir);
+        PICO60Output->stageCameraOutput(AnalyzerC2->bubbleRects,2, AnalyzerC2->MatTrigFrame, evi);
 
 
 
@@ -144,6 +145,9 @@ int main(int argc, char** argv)
         delete AnalyzerC0;
         delete AnalyzerC2;
     }
+
+    /*Write staged output*/
+    PICO60Output->writeCameraOutput();
 
     /*GC*/
     delete TrainC0;

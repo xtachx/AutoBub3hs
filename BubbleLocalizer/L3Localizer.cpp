@@ -246,13 +246,14 @@ void L3Localizer::CalculateInitialBubbleParams(void )
     std::vector<cv::RotatedRect> minAreaRect( contours.size() );
     std::vector<cv::Rect> minRect( contours.size() );
 
+    int BoxArea=0;
     /*Generate the ellipses and rectangles for each contours*/
     for( int i = 0; i < contours.size(); i++ ) {
         minRect[i] = cv::boundingRect( contours[i]);
-
-        std::cout<<" New contour size: "<<contours[i].size()<<"\n";
+        BoxArea = minRect[i].width*minRect[i].height;
+        std::cout<<" New box area: "<<BoxArea<<"\n";
         cv::rectangle(this->presentationFrame, minRect[i], this->color_red,1,8,0);
-
+        this->bubbleRects.push_back(minRect[i]);
 
     }
     //printf ("Checkpoint 5\n");

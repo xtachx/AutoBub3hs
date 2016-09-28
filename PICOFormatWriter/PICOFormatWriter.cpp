@@ -63,10 +63,10 @@ void OutputWriter::stageCameraOutput(std::vector<cv::Rect> BubbleRectIn, int cam
     else tempStatus = 0;
 
     BubbleData* thisBubbleData;
-    if (camera==0) thisBubbleData = this->BubbleData0;
-    else if (camera==1) thisBubbleData = this->BubbleData1;
-    else if (camera==2) thisBubbleData = this->BubbleData2;
-    else if (camera==3) thisBubbleData = this->BubbleData3;
+    if (camera==0) thisBubbleData = &this->BubbleData0;
+    else if (camera==1) thisBubbleData = &this->BubbleData1;
+    else if (camera==2) thisBubbleData = &this->BubbleData2;
+    else if (camera==3) thisBubbleData = &this->BubbleData3;
 
 
     thisBubbleData->RectData = BubbleRectIn;
@@ -101,34 +101,41 @@ void OutputWriter::stageCameraOutputError(int camera, int error){
 
 }
 
-void OutputWriter::formEachBubbleOutput(int camera, int ibubImageStart, int nBubTotal, int event, int frame0){
+OutputWriter::BubbleData::BubbleData(){};
+
+
+void OutputWriter::formEachBubbleOutput(int camera, int &ibubImageStart, int nBubTotal){
+
+    this->_StreamOutput.clear();
 
     BubbleData *workingData;
 
-    if (camera==0) workingData = this->BubbleData0;
-    if (camera==1) workingData = this->BubbleData1;
-    if (camera==2) workingData = this->BubbleData2;
-    if (camera==3) workingData = this->BubbleData3;
+    if (camera==0) workingData = &this->BubbleData0;
+    else if (camera==1) workingData = &this->BubbleData1;
+    else if (camera==2) workingData = &this->BubbleData2;
+    else if (camera==3) workingData = &this->BubbleData3;
 
     //int event;
     //int frame0=50;
     //run ev ibubimage TotalBub4CamImg camera frame0 hori vert smajdiam smindiam\n";
     if (workingData->StatusCode !=0) {
-        this->_StreamOutput<<this->run_number<<" "<<event<<" "<<0.0<<" "<<0.0<<" "<<camera<<" "<<workingData->StatusCode<<" "<<0.0<<" "<<0.0<<" "<<0.0<<" "<<0.0<<"\n";
+        this->_StreamOutput<<this->run_number<<" "<<workingData->event<<" "<<0.0<<" "<<0.0<<" "<<camera<<" "<<workingData->StatusCode<<" "<<0.0<<" "<<0.0<<" "<<0.0<<" "<<0.0<<"\n";
     } else {
     /*Write all outputs here*/
         for (int i=0; i<workingData->RectData.size(); i++){
             //run ev iBubImage TotalBub4CamImage camera
-            this->_StreamOutput<<this->run_number<<" "<<event<<" "<<ibubImageStart+i<<" "<<nBubTotal<<" "<<camera<<" ";
+            this->_StreamOutput<<this->run_number<<" "<<workingData->event<<" "<<ibubImageStart+i<<" "<<nBubTotal<<" "<<camera<<" ";
             //frame0
-            this->_StreamOutput<<frame0<<" ";
+            this->_StreamOutput<<workingData->frame0<<" ";
             //hori vert smajdiam smindiam
-            float width=RectData[i].width;
-            float height=RectData[i].height;
-            float x = (float)RectData[i].x+(float)width/2.0;
-            float y = (float)RectData[i].y+(float)height/2.0;
+            float width=workingData->RectData[i].width;
+            float height=workingData->RectData[i].height;
+            float x = (float)workingData->RectData[i].x+width/2.0;
+            float y = (float)workingData->RectData[i].y+height/2.0;
             this->_StreamOutput<<x<<" "<<y<<" "<<width<<" "<<height<<"\n";
         }
+
+        ibubImageStart += workingData->RectData.size();
 
     }
 
@@ -140,8 +147,17 @@ void OutputWriter::formEachBubbleOutput(int camera, int ibubImageStart, int nBub
 
 void OutputWriter::writeCameraOutput(void){
 
-    this->OutFile.open(this->abubOutFilename);
+    int ibubImageStart = 1;
+    int nBubTotal = this->BubbleData0.RectData.size()+this->BubbleData1.RectData.size()+this->BubbleData2.RectData.size()+this->BubbleData3.RectData.size();
 
+    this->formEachBubbleOutput(0, ibubImageStart, nBubTotal);
+    this->formEachBubbleOutput(1, ibubImageStart, nBubTotal);
+    this->formEachBubbleOutput(2, ibubImageStart, nBubTotal);
+    this->formEachBubbleOutput(3, ibubImageStart, nBubTotal);
+
+    this->OutFile.open(this->abubOutFilename);
+    this->OutFile<<this->_StreamOutput.rdbuf();
     this->OutFile.close();
 }
+
 
