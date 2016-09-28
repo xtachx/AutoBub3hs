@@ -20,6 +20,7 @@
 #include <opencv2/opencv.hpp>
 #include "../AnalyzerUnit.hpp"
 #include "../AlgorithmTraining/Trainer.hpp"
+#include <vector>
 
 /*Memory Allocations*/
 
@@ -71,11 +72,6 @@ class L3Localizer: public AnalyzerUnit{
         bool Level1SuspicionFlag;
 
         void LocalizeOMatic(std::string);
-
-
-
-
-
 
 
 

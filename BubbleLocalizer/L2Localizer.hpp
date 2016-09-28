@@ -67,7 +67,7 @@ class L2Localizer{
         int numBubbleMultiplicity;
         bool Level1SuspicionFlag;
 
-        std::vector<cv::RotatedRect> bubbleRects;
+        std::vector<cv::Rect> bubbleRects;
 
 
 

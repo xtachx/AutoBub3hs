@@ -33,6 +33,7 @@ class OutputWriter{
             int StatusCode;
             int frame0;
             int event;
+            BubbleData();
         };
         /*direct access to the trained data*/
         BubbleData BubbleData0;
@@ -47,10 +48,10 @@ class OutputWriter{
 
         /*Compute the mean and std*/
         void writeHeader(void );
-        void stageCameraOutput(std::vector<cv::Rect> , int);
+        void stageCameraOutput(std::vector<cv::Rect> , int, int, int);
         void stageCameraOutputError(int, int);
 
-        void formEachBubbleOutput(int, int, int, int, int );
+        void formEachBubbleOutput(int, int&, int );
         void writeCameraOutput(void);
 
 
