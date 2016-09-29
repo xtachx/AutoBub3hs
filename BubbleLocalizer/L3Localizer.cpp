@@ -198,44 +198,27 @@ void L3Localizer::rem_unique(std::vector<cv::Rect>& L2SearchAreas, std::vector<c
 void L3Localizer::CalculateInitialBubbleParams(void )
 {
 
-    //cv::Mat& TriggerFrame, ComparisonFrame, cv::Mat& FrameAfterTrigger
-
     /*Declare memory / variables that will be needed */
-    cv::Mat LBPImageTrig, LBPImageTrigNext;
-    cv::Mat FrameDiffTrig, FrameDiffTrigNext;
-    cv::Mat FrameAfterTrigger = cv::imread(this->ImageDir + this->CameraFrames[this->MatTrigFrame+1],0);
+    //cv::Mat FrameAfterTrigger = cv::imread(this->ImageDir + this->CameraFrames[this->MatTrigFrame+1],0);
 
 
     /*Temporary holder for the presentationFrame*/
     cv::Mat tempPresentation;
-    cv::Mat tempInvertImage;
     tempPresentation = this->presentationFrame;//.clone();
 
 
 
     /*Construct the frame differences and LBPImage Frames*/
-    //cv::absdiff(FrameAfterTrigger, this->ComparisonFrame, FrameDiffTrigNext);
-    cv::absdiff(this->triggerFrame, this->ComparisonFrame, FrameDiffTrig);
-    //FrameDiffTrig =  this->triggerFrame - this->ComparisonFrame;
-
-
-    printf("New Stuff: \n");
     cv::Mat NewFrameDiffTrig, overTheSigma, LBPImageTrigBeforeBlur, LBPImageTrigAfterBlur;
     cv::absdiff(this->triggerFrame, this->TrainedData->TrainedAvgImage, NewFrameDiffTrig);
 
     overTheSigma = NewFrameDiffTrig - 6*this->TrainedData->TrainedSigmaImage;
 
-    //LBPImageTrigBeforeBlur = lbpImageSingleChan(overTheSigma);
     cv::blur(overTheSigma,overTheSigma, cv::Size(3,3));
-    //LBPImageTrigAfterBlur = lbpImageSingleChan(overTheSigma);
 
     cv::threshold(overTheSigma, overTheSigma, 3, 255, CV_THRESH_TOZERO);
     cv::threshold(overTheSigma, overTheSigma, 0, 255, CV_THRESH_BINARY|CV_THRESH_OTSU);
-    //cv::imwrite("CheckOutput.png",overTheSigma);
 
-
-    //debugShow(NewFrameDiffTrig);
-    //cv::normalize(overTheSigma,overTheSigma,0,255,NORM_MINMAX);
 
 
     /*Use contour / canny edge detection to find contours of interesting objects*/
@@ -251,19 +234,13 @@ void L3Localizer::CalculateInitialBubbleParams(void )
     for( int i = 0; i < contours.size(); i++ ) {
         minRect[i] = cv::boundingRect( contours[i]);
         BoxArea = minRect[i].width*minRect[i].height;
-        std::cout<<" New box area: "<<BoxArea<<"\n";
-        cv::rectangle(this->presentationFrame, minRect[i], this->color_red,1,8,0);
-        this->bubbleRects.push_back(minRect[i]);
+        if (BoxArea>10){
+            //std::cout<<" New box area: "<<BoxArea<<"\n";
+            cv::rectangle(this->presentationFrame, minRect[i], this->color_red,1,8,0);
+            this->bubbleRects.push_back(minRect[i]);
+        }
 
     }
-    //printf ("Checkpoint 5\n");
-    cv::imwrite("CheckOutput.png",this->presentationFrame);
-    debugShow(this->presentationFrame);
-
-
-    //debugShow(this->presentationFrame);
-
-
 
 }
 /*Takes care of the localization completely. Just like it says... Localize-O-Matic!*/
@@ -300,12 +277,12 @@ void L3Localizer::LocalizeOMatic(std::string imageStorePath)
         this->ComparisonFrame = cv::imread(this->ImageDir + this->CameraFrames[0],0);
     }
     /*Run the analyzer series*/
-    this->numBubbleMultiplicity=0;
     this->CalculateInitialBubbleParams();
+    //this->numBubbleMultiplicity=0;
 
 
     /*Analyze results*/
-    std::cout<<"Refined bubble multiplicity:  "<<this->numBubbleMultiplicity<<"\n";
+    //std::cout<<"Refined bubble multiplicity:  "<<this->numBubbleMultiplicity<<"\n";
 
     /*Store the finished image*/
     //cv::imwrite(imageStorePath+"/"+eventSeq+".jpg", BubbleFrame);
