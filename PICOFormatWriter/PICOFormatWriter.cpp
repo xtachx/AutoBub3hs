@@ -119,14 +119,14 @@ void OutputWriter::formEachBubbleOutput(int camera, int &ibubImageStart, int nBu
     //int frame0=50;
     //run ev ibubimage TotalBub4CamImg camera frame0 hori vert smajdiam smindiam\n";
     if (workingData->StatusCode !=0) {
-        this->_StreamOutput<<this->run_number<<" "<<workingData->event<<" "<<0.0<<" "<<0.0<<" "<<camera<<" "<<workingData->StatusCode<<" "<<0.0<<" "<<0.0<<" "<<0.0<<" "<<0.0<<"\n";
+        this->_StreamOutput<<this->run_number<<" "<<workingData->event<<"    "<<0.0<<" "<<0.0<<"    "<<camera<<" "<<workingData->StatusCode<<"    "<<0.0<<" "<<0.0<<" "<<0.0<<" "<<0.0<<"\n";
     } else {
     /*Write all outputs here*/
         for (int i=0; i<workingData->RectData.size(); i++){
             //run ev iBubImage TotalBub4CamImage camera
-            this->_StreamOutput<<this->run_number<<" "<<workingData->event<<" "<<ibubImageStart+i<<" "<<nBubTotal<<" "<<camera<<" ";
+            this->_StreamOutput<<this->run_number<<" "<<workingData->event<<"    "<<ibubImageStart+i<<" "<<nBubTotal<<"    "<<camera<<" ";
             //frame0
-            this->_StreamOutput<<workingData->frame0<<" ";
+            this->_StreamOutput<<workingData->frame0<<"    ";
             //hori vert smajdiam smindiam
             float width=workingData->RectData[i].width;
             float height=workingData->RectData[i].height;
@@ -155,7 +155,7 @@ void OutputWriter::writeCameraOutput(void){
     this->formEachBubbleOutput(2, ibubImageStart, nBubTotal);
     this->formEachBubbleOutput(3, ibubImageStart, nBubTotal);
 
-    this->OutFile.open(this->abubOutFilename);
+    this->OutFile.open(this->abubOutFilename, std::fstream::out | std::fstream::app);
     this->OutFile<<this->_StreamOutput.rdbuf();
     this->OutFile.close();
 }

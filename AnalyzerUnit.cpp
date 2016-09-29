@@ -112,7 +112,7 @@ void AnalyzerUnit::FindTriggerFrame(void ){
 
     /*The reference image does not change, it is the first frame*/
     std::string refImg = this->ImageDir + this->CameraFrames[0];
-    std::cout<<"Ref Image: "<<refImg<<"\n";
+    //std::cout<<"Ref Image: "<<refImg<<"\n";
     comparisonFrame = cv::imread(refImg.c_str());
 
     /*Start by flagging that a bubble wasnt found, flag gets changed to 0 if all goes well*/
@@ -136,7 +136,7 @@ void AnalyzerUnit::FindTriggerFrame(void ){
          * Debug Point here
          * **************** */
         //debugShow(img_mask1);
-        std::cout<<"Entropy of BkgSub image: "<<singleEntropy<<"\n";
+        //std::cout<<"Entropy of BkgSub image: "<<singleEntropy<<"\n";
 
 
         /*Calculate entropy of ROI*/
@@ -164,7 +164,7 @@ void AnalyzerUnit::FindTriggerFrame(void ){
 
 
     if  (this->TriggerFrameIdentificationStatus==2) {
-        printf("\n**No bubbles were found. Manually check this folder**\n");
+        //printf("\n**No bubbles were found. Manually check this folder**\n");
         this->okToProceed=false;
         this->MatTrigFrame;
     }

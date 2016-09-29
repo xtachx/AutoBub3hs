@@ -89,14 +89,14 @@ int main(int argc, char** argv)
     Trainer *TrainC0 = new Trainer(0, EventList, eventDir);
     TrainC0->MakeAvgSigmaImage(false);
 
-    //Trainer *TrainC1 = new Trainer(1, EventList, eventDir);
-    //TrainC1->MakeAvgSigmaImage();
+    Trainer *TrainC1 = new Trainer(1, EventList, eventDir);
+    TrainC1->MakeAvgSigmaImage(false);
 
     Trainer *TrainC2 = new Trainer(2, EventList, eventDir);
     TrainC2->MakeAvgSigmaImage(false);
 
-    //Trainer *TrainC3 = new Trainer(3, EventList, eventDir);
-    //TrainC3->MakeAvgSigmaImage();
+    Trainer *TrainC3 = new Trainer(3, EventList, eventDir);
+    TrainC3->MakeAvgSigmaImage(false);
 
     /*Detect mode
      *Iterate through all the events in the list and detect bubbles in them one by one
@@ -105,15 +105,16 @@ int main(int argc, char** argv)
 
     for (int evi = 0; evi < EventList.size(); evi++) {
         std::string imageDir=eventDir+EventList[evi]+"/Images/";
-        std::cout<<"Processing: "<<"\n";
+        std::cout<<"Processing event: "<<evi<<" / "<<EventList.size()<<"\n";
         AnalyzerUnit *AnalyzerC0 = new L3Localizer(EventList[evi], imageDir, 0, false, &TrainC0); /*EventID, imageDir and camera number*/
-        //AnalyzerUnit *AnalyzerC1 = new L3Localizer(EventList[evi], imageDir, 1, false, &TrainC1); /*EventID, imageDir and camera number*/
+        AnalyzerUnit *AnalyzerC1 = new L3Localizer(EventList[evi], imageDir, 1, false, &TrainC1); /*EventID, imageDir and camera number*/
         AnalyzerUnit *AnalyzerC2 = new L3Localizer(EventList[evi], imageDir, 2, false, &TrainC2); /*EventID, imageDir and camera number*/
-        //AnalyzerUnit *AnalyzerC3 = new L3Localizer(EventList[evi], imageDir, 3, false, &TrainC3); /*EventID, imageDir and camera number*/
+        AnalyzerUnit *AnalyzerC3 = new L3Localizer(EventList[evi], imageDir, 3, false, &TrainC3); /*EventID, imageDir and camera number*/
 
 
 
 
+        int actualEventNumber = atoi(EventList[evi].c_str());
         /* ***************************
          * ***** Camera 0 Operations ******
          ********************************/
@@ -121,9 +122,22 @@ int main(int argc, char** argv)
         //Generate File lists to process for this event
         AnalyzerC0->ParseAndSortFramesInFolder();
         AnalyzerC0->FindTriggerFrame();
-        cout<<"Trigger Frame: "<<AnalyzerC0->MatTrigFrame<<"\n";
+        //cout<<"Trigger Frame: "<<AnalyzerC0->MatTrigFrame<<"\n";
         AnalyzerC0->LocalizeOMatic(out_dir);
-        PICO60Output->stageCameraOutput(AnalyzerC0->bubbleRects,0, AnalyzerC0->MatTrigFrame, evi);
+        PICO60Output->stageCameraOutput(AnalyzerC0->bubbleRects,0, AnalyzerC0->MatTrigFrame, actualEventNumber);
+
+
+        /* ***************************
+         * ***** Camera 1 Operations ******
+         ********************************/
+
+        //Generate File lists to process for this event
+        AnalyzerC1->ParseAndSortFramesInFolder();
+        AnalyzerC1->FindTriggerFrame();
+        //cout<<"Trigger Frame: "<<AnalyzerC1->MatTrigFrame<<"\n";
+        AnalyzerC1->LocalizeOMatic(out_dir);
+        PICO60Output->stageCameraOutput(AnalyzerC1->bubbleRects,1, AnalyzerC1->MatTrigFrame, actualEventNumber);
+
 
 
         /* ***************************
@@ -133,25 +147,41 @@ int main(int argc, char** argv)
         //Generate File lists to process for this event
         AnalyzerC2->ParseAndSortFramesInFolder();
         AnalyzerC2->FindTriggerFrame();
-        cout<<"Trigger Frame: "<<AnalyzerC2->MatTrigFrame<<"\n";
+        //cout<<"Trigger Frame: "<<AnalyzerC2->MatTrigFrame<<"\n";
         AnalyzerC2->LocalizeOMatic(out_dir);
-        PICO60Output->stageCameraOutput(AnalyzerC2->bubbleRects,2, AnalyzerC2->MatTrigFrame, evi);
+        PICO60Output->stageCameraOutput(AnalyzerC2->bubbleRects,2, AnalyzerC2->MatTrigFrame, actualEventNumber);
+
+
+        /* ***************************
+         * ***** Camera 3 Operations ******
+         ********************************/
+
+        //Generate File lists to process for this event
+        AnalyzerC3->ParseAndSortFramesInFolder();
+        AnalyzerC3->FindTriggerFrame();
+        //cout<<"Trigger Frame: "<<AnalyzerC3->MatTrigFrame<<"\n";
+        AnalyzerC3->LocalizeOMatic(out_dir);
+        PICO60Output->stageCameraOutput(AnalyzerC3->bubbleRects,3, AnalyzerC3->MatTrigFrame, actualEventNumber);
 
 
 
 
 
-
+        PICO60Output->writeCameraOutput();
         delete AnalyzerC0;
+        delete AnalyzerC1;
         delete AnalyzerC2;
+        delete AnalyzerC3;
     }
 
     /*Write staged output*/
-    PICO60Output->writeCameraOutput();
+
 
     /*GC*/
     delete TrainC0;
+    delete TrainC1;
     delete TrainC2;
+    delete TrainC3;
     delete PICO60Output;
 
 
