@@ -120,6 +120,7 @@ int main(int argc, char** argv)
          ********************************/
 
         //Generate File lists to process for this event
+        std::cout<<"Camera 0: \n";
         AnalyzerC0->ParseAndSortFramesInFolder();
         AnalyzerC0->FindTriggerFrame();
         //cout<<"Trigger Frame: "<<AnalyzerC0->MatTrigFrame<<"\n";
@@ -132,6 +133,7 @@ int main(int argc, char** argv)
          ********************************/
 
         //Generate File lists to process for this event
+        std::cout<<"Camera 1: \n";
         AnalyzerC1->ParseAndSortFramesInFolder();
         AnalyzerC1->FindTriggerFrame();
         //cout<<"Trigger Frame: "<<AnalyzerC1->MatTrigFrame<<"\n";
@@ -145,6 +147,7 @@ int main(int argc, char** argv)
          ********************************/
 
         //Generate File lists to process for this event
+        std::cout<<"Camera 2: \n";
         AnalyzerC2->ParseAndSortFramesInFolder();
         AnalyzerC2->FindTriggerFrame();
         //cout<<"Trigger Frame: "<<AnalyzerC2->MatTrigFrame<<"\n";
@@ -157,6 +160,7 @@ int main(int argc, char** argv)
          ********************************/
 
         //Generate File lists to process for this event
+        std::cout<<"Camera 3: \n";
         AnalyzerC3->ParseAndSortFramesInFolder();
         AnalyzerC3->FindTriggerFrame();
         //cout<<"Trigger Frame: "<<AnalyzerC3->MatTrigFrame<<"\n";

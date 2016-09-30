@@ -6,6 +6,7 @@
 #include "AlgorithmTraining/Trainer.hpp"
 
 #include <opencv2/opencv.hpp>
+#include "bubble/bubble.hpp"
 
 
 class AnalyzerUnit{
@@ -59,6 +60,7 @@ class AnalyzerUnit{
 
         Trainer* TrainedData;
         /*Training Data*/
+        std::vector<bubble*> BubbleList;
 
 
 
