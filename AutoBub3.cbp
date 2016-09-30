@@ -88,6 +88,8 @@
 		<Unit filename="ParseFolder/ParseFolder.cpp" />
 		<Unit filename="ParseFolder/ParseFolder.hpp" />
 		<Unit filename="SQLiteDBstorage/CMakeLists.txt" />
+		<Unit filename="bubble/bubble.cpp" />
+		<Unit filename="bubble/bubble.hpp" />
 		<Unit filename="common/CommonDatatypes.h" />
 		<Unit filename="testbed/CMakeLists.txt" />
 		<Unit filename="testbed/ImageEntropyMethods.cpp" />

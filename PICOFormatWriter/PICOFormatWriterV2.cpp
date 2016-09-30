@@ -5,7 +5,8 @@
 
 
 #include <opencv2/opencv.hpp>
-#include "PICOFormatWriter.hpp"
+#include "PICOFormatWriterV2.hpp"
+#include "../bubble/bubble.hpp"
 
 
 
@@ -42,7 +43,7 @@ void OutputWriter::writeHeader(void ){
 
     this->OutFile.open(this->abubOutFilename);
     this->OutFile<<"Output of AutoBub v3 - the automatic unified bubble finder code by Pitam, using OpenCV.\n";
-    this->OutFile<<"run ev ibubimage TotalBub4CamImg camera frame0 hori vert smajdiam smindiam\n";
+    this->OutFile<<"run ev ibubimage TotalBub4CamImg camera frame0 GenesisX GenesisY GenesisW GenesisH dZdt dRdt\n";
     this->OutFile<<"%12s %5d %d %d %d %d %d %d %.02f %.02f\n8\n\n\n";
     this->OutFile.close();
 }
@@ -56,7 +57,7 @@ void OutputWriter::writeHeader(void ){
  * This function writes the header file for abub3 output
  */
 
-void OutputWriter::stageCameraOutput(std::vector<cv::Rect> BubbleRectIn, int camera, int frame0, int event){
+void OutputWriter::stageCameraOutput(std::vector<bubble*> BubbleRectIn, int camera, int frame0, int event){
 
     int tempStatus;
     if (BubbleRectIn.size()==0) tempStatus = -1;
@@ -69,7 +70,7 @@ void OutputWriter::stageCameraOutput(std::vector<cv::Rect> BubbleRectIn, int cam
     else if (camera==3) thisBubbleData = &this->BubbleData3;
 
 
-    thisBubbleData->RectData = BubbleRectIn;
+    thisBubbleData->BubbleObjectData = BubbleRectIn;
     thisBubbleData->StatusCode = tempStatus;
     thisBubbleData->frame0 = frame0;
     thisBubbleData->event = event;
@@ -117,25 +118,31 @@ void OutputWriter::formEachBubbleOutput(int camera, int &ibubImageStart, int nBu
 
     //int event;
     //int frame0=50;
-    //run ev ibubimage TotalBub4CamImg camera frame0 hori vert smajdiam smindiam\n";
+    //run ev ibubimage TotalBub4CamImg camera frame0 GenesisX GenesisY GenesisW GenesisH dZdt dRdt\n";
     if (workingData->StatusCode !=0) {
-        this->_StreamOutput<<this->run_number<<" "<<workingData->event<<"    "<<0.0<<" "<<0.0<<"    "<<camera<<" "<<workingData->StatusCode<<"    "<<0.0<<" "<<0.0<<" "<<0.0<<" "<<0.0<<"\n";
+        this->_StreamOutput<<this->run_number<<" "<<workingData->event<<"    "<<0.0<<" "<<0.0<<"    "<<camera<<" "<<workingData->StatusCode<<"    "<<0.0<<" "<<0.0<<" "<<0.0<<" "<<0.0;
+        this->_StreamOutput<<" "<<0.0<<" "<<0.0<<"\n";
     } else {
     /*Write all outputs here*/
-        for (int i=0; i<workingData->RectData.size(); i++){
+        for (int i=0; i<workingData->BubbleObjectData.size(); i++){
             //run ev iBubImage TotalBub4CamImage camera
             this->_StreamOutput<<this->run_number<<" "<<workingData->event<<"    "<<ibubImageStart+i<<" "<<nBubTotal<<"    "<<camera<<" ";
             //frame0
             this->_StreamOutput<<workingData->frame0<<"    ";
             //hori vert smajdiam smindiam
-            float width=workingData->RectData[i].width;
-            float height=workingData->RectData[i].height;
-            float x = (float)workingData->RectData[i].x+width/2.0;
-            float y = (float)workingData->RectData[i].y+height/2.0;
-            this->_StreamOutput<<x<<" "<<y<<" "<<width<<" "<<height<<"\n";
+            float width=workingData->BubbleObjectData[i]->GenesisPosition.width;
+            float height=workingData->BubbleObjectData[i]->GenesisPosition.height;
+            float x = (float)workingData->BubbleObjectData[i]->GenesisPosition.x+width/2.0;
+            float y = (float)workingData->BubbleObjectData[i]->GenesisPosition.y+height/2.0;
+
+
+            float dzdt = workingData->BubbleObjectData[i]->dZdT();
+            float drdt = workingData->BubbleObjectData[i]->dRdT();
+
+            this->_StreamOutput<<x<<" "<<y<<" "<<width<<" "<<height<<" "<<dzdt<<" "<<drdt<<"\n";
         }
 
-        ibubImageStart += workingData->RectData.size();
+        ibubImageStart += workingData->BubbleObjectData.size();
 
     }
 
@@ -148,7 +155,7 @@ void OutputWriter::formEachBubbleOutput(int camera, int &ibubImageStart, int nBu
 void OutputWriter::writeCameraOutput(void){
 
     int ibubImageStart = 1;
-    int nBubTotal = this->BubbleData0.RectData.size()+this->BubbleData1.RectData.size()+this->BubbleData2.RectData.size()+this->BubbleData3.RectData.size();
+    int nBubTotal = this->BubbleData0.BubbleObjectData.size()+this->BubbleData1.BubbleObjectData.size()+this->BubbleData2.BubbleObjectData.size()+this->BubbleData3.BubbleObjectData.size();
 
     this->formEachBubbleOutput(0, ibubImageStart, nBubTotal);
     this->formEachBubbleOutput(1, ibubImageStart, nBubTotal);

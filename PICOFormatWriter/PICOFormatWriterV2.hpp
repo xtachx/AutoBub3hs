@@ -7,6 +7,8 @@
 #include <iostream>
 
 #include <opencv2/opencv.hpp>
+#include "../bubble/bubble.hpp"
+
 
 
 class OutputWriter{
@@ -29,7 +31,7 @@ class OutputWriter{
     public:
 
         struct BubbleData{
-            std::vector<cv::Rect> RectData;
+            std::vector<bubble*> BubbleObjectData;
             int StatusCode;
             int frame0;
             int event;
@@ -50,7 +52,7 @@ class OutputWriter{
 
         /*Compute the mean and std*/
         void writeHeader(void );
-        void stageCameraOutput(std::vector<cv::Rect> , int, int, int);
+        void stageCameraOutput(std::vector<bubble*> , int, int, int);
         void stageCameraOutputError(int, int);
 
         void formEachBubbleOutput(int, int&, int );

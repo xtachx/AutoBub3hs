@@ -19,6 +19,7 @@
 #include "opencv2/opencv.hpp"
 #include "bubble.hpp"
 #include <iostream>
+#include <math.h>
 
 
 /* ******************************************************************************
@@ -40,6 +41,9 @@ bubble::bubble(cv::Rect bubbleGenesisRect){
 
     this->GenesisPosition = bubbleGenesisRect;
 
+    //printf("Checkpoint 1\n");
+    this->lockThisIteration = true;
+
 }
 
 
@@ -49,14 +53,18 @@ void bubble::operator<<(cv::Rect newPosition){
 
     /*Maybe check if the position is viable here  */
 
-    this->KnownDescriptors.push_back(newPosition);
 
 
+    if (!this->lockThisIteration){
 
-    this->dz.push_back(this->last_x-newPosition.x);
+        this->KnownDescriptors.push_back(newPosition);
+        this->dz.push_back(this->last_x-newPosition.x);
 
-    this->last_x=newPosition.x;
-    this->last_y=newPosition.y;
+        this->last_x=newPosition.x;
+        this->last_y=newPosition.y;
+
+        this->lockThisIteration=true;
+    }
 
 
 }
@@ -76,8 +84,8 @@ void bubble::printAllXY(void){
 
 bool bubble::isNewPositionProbable(int &x, int &y){
 
-    if (fabs(this->last_y-y)<=5){
-        if((this->last_x-x)<15) return true;
+    if (fabs(this->last_y-y)<=4){
+        if((this->last_x-x)<5) return true;
     }
 
     return false;
@@ -85,5 +93,22 @@ bool bubble::isNewPositionProbable(int &x, int &y){
 
 
 
+float bubble::dZdT (void){
+
+    int numFrames=this->KnownDescriptors.size();
+    float total_z=this->KnownDescriptors[0].x-this->KnownDescriptors[numFrames-1].x;
+    return total_z/((float)numFrames-1.0);
+
+}
+
+float bubble::dRdT(void){
+
+    int numFrames=this->KnownDescriptors.size();
+    float dx=this->KnownDescriptors[0].width-this->KnownDescriptors[numFrames-1].width;
+    float dy=this->KnownDescriptors[0].height-this->KnownDescriptors[numFrames-1].height;
+
+    float dr = sqrt(dx*dx+dy*dy);
+    return dr/((float)numFrames-1.0);
+}
 
 

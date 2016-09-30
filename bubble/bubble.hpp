@@ -50,8 +50,10 @@ class bubble{
         std::vector<float> dz;
 
         void dSizedT(std::vector<std::pair<float,float>>&);
-        int dRdT(void);
-        int dZdT (void);
+        float dRdT(void);
+        float dZdT (void);
+
+        bool lockThisIteration;
 
 
         /*Matching algorithms*/

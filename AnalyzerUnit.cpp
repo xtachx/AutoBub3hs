@@ -26,7 +26,13 @@ AnalyzerUnit::AnalyzerUnit(std::string EventID, std::string ImageDir, int Camera
 
 }
 
-AnalyzerUnit::~AnalyzerUnit(void ){}
+AnalyzerUnit::~AnalyzerUnit(void ){
+
+    /*Clear the bubble memory pointers*/
+    for (int i=0; i<this->BubbleList.size(); i++){
+        delete this->BubbleList[i];
+    }
+}
 
 
 
