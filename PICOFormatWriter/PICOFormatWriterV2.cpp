@@ -128,7 +128,7 @@ void OutputWriter::formEachBubbleOutput(int camera, int &ibubImageStart, int nBu
             //run ev iBubImage TotalBub4CamImage camera
             this->_StreamOutput<<this->run_number<<" "<<workingData->event<<"    "<<ibubImageStart+i<<" "<<nBubTotal<<"    "<<camera<<" ";
             //frame0
-            this->_StreamOutput<<workingData->frame0<<"    ";
+            this->_StreamOutput<<workingData->frame0+30<<"    ";
             //hori vert smajdiam smindiam
             float width=workingData->BubbleObjectData[i]->GenesisPosition.width;
             float height=workingData->BubbleObjectData[i]->GenesisPosition.height;
