@@ -21,6 +21,7 @@
 #include "../AnalyzerUnit.hpp"
 #include "../AlgorithmTraining/Trainer.hpp"
 #include <vector>
+#include "../bubble/bubble.hpp"
 
 /*Memory Allocations*/
 
@@ -47,6 +48,9 @@ class L3Localizer: public AnalyzerUnit{
         cv::Mat presentationFrame, frameDiffTrig;
         cv::Mat ComparisonFrame, triggerFrame;
 
+        cv::Mat PostTrigWorkingFrame;
+
+
 
         /*Test functions and pass criteria*/
         void EllipseTest(cv::Mat&, cv::RotatedRect&, cv::Rect&, cv::Scalar&, std::vector<cv::RotatedRect>&,  int, bool drawEllipses=true);
@@ -66,6 +70,8 @@ class L3Localizer: public AnalyzerUnit{
         /*Public functions exposing the interface*/
         //void LocalizeBottomBubble(cv::Mat&, cv::Mat&, std::vector<cv::RotatedRect>& );
         void CalculateInitialBubbleParams(void );
+        void CalculatePostTriggerFrameParams(int );
+        void printBubbleList(void);
 
         /*Public variables exposed for direct manipulation*/
         int numBubbleMultiplicity=0;

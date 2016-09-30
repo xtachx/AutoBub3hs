@@ -32,6 +32,7 @@
 #include "../common/UtilityFunctions.hpp"
 #include "../AnalyzerUnit.hpp"
 #include "../AlgorithmTraining/Trainer.hpp"
+#include "../bubble/bubble.hpp"
 
 
 
@@ -204,7 +205,7 @@ void L3Localizer::CalculateInitialBubbleParams(void )
 
     /*Temporary holder for the presentationFrame*/
     cv::Mat tempPresentation;
-    tempPresentation = this->presentationFrame;//.clone();
+    tempPresentation = this->presentationFrame.clone();
 
 
 
@@ -235,15 +236,101 @@ void L3Localizer::CalculateInitialBubbleParams(void )
         minRect[i] = cv::boundingRect( contours[i]);
         BoxArea = minRect[i].width*minRect[i].height;
         if (BoxArea>10){
-            //std::cout<<" New box area: "<<BoxArea<<"\n";
+            //std::cout<<" Bubble genesis              X: "<<minRect[i].x<<" Y: "<<minRect[i].y<<" W: "<<minRect[i].width<<" H: "<<minRect[i].height<<"\n";
             cv::rectangle(this->presentationFrame, minRect[i], this->color_red,1,8,0);
             this->bubbleRects.push_back(minRect[i]);
+
+            bubble* firstBubble = new bubble(minRect[i]);
+            this->BubbleList.push_back(firstBubble);
         }
 
     }
 
+    //debugShow(this->presentationFrame);
+
 }
 /*Takes care of the localization completely. Just like it says... Localize-O-Matic!*/
+
+
+void L3Localizer::CalculatePostTriggerFrameParams(int postTrigFrameNumber){
+
+    cv::Mat tempPresentation;
+
+    /*Load the post trig frame*/
+    this->PostTrigWorkingFrame = cv::imread(this->ImageDir + this->CameraFrames[this->MatTrigFrame+1+postTrigFrameNumber],0);
+    tempPresentation =  this->PostTrigWorkingFrame.clone();
+    cv::cvtColor(tempPresentation, tempPresentation, cv::COLOR_GRAY2BGR);
+
+
+
+
+    /*Construct the frame differences*/
+    cv::Mat NewFrameDiffTrig, overTheSigma, LBPImageTrigBeforeBlur, LBPImageTrigAfterBlur;
+    cv::absdiff(this->PostTrigWorkingFrame, this->TrainedData->TrainedAvgImage, NewFrameDiffTrig);
+
+    /*Calculate pixels over the sigma*/
+    overTheSigma = NewFrameDiffTrig - 6*this->TrainedData->TrainedSigmaImage;
+
+    /*Blur and threshold to remove pixel noise*/
+    cv::blur(overTheSigma,overTheSigma, cv::Size(3,3));
+    cv::threshold(overTheSigma, overTheSigma, 3, 255, CV_THRESH_TOZERO);
+    cv::threshold(overTheSigma, overTheSigma, 0, 255, CV_THRESH_BINARY|CV_THRESH_OTSU);
+
+
+
+    /*Use contour / canny edge detection to find contours of interesting objects*/
+    std::vector<std::vector<cv::Point> > contours;
+    cv::findContours(overTheSigma, contours, CV_RETR_EXTERNAL, CV_CHAIN_APPROX_TC89_L1);
+
+    /*Make two vectors to store the fitted rectanglse and ellipses*/
+    std::vector<cv::RotatedRect> minAreaRect( contours.size() );
+    std::vector<cv::Rect> minRect( contours.size() );
+    std::vector<cv::Rect> newPositions;
+
+
+    int BoxArea=0;
+    /*Generate the ellipses and rectangles for each contours*/
+    for( int i = 0; i < contours.size(); i++ ) {
+        minRect[i] = cv::boundingRect( contours[i]);
+        BoxArea = minRect[i].width*minRect[i].height;
+        if (BoxArea>10){
+            //std::cout<<" Bubble progression step:"<<postTrigFrameNumber<<" | X: "<<minRect[i].x<<" Y: "<<minRect[i].y<<" W: "<<minRect[i].width<<" H: "<<minRect[i].height<<"\n";
+            cv::rectangle(tempPresentation, minRect[i], this->color_red,1,8,0);
+            newPositions.push_back(minRect[i]);
+            //this->bubbleRects.push_back(minRect[i]);
+        }
+
+    }
+
+    /*Match these with the global bubbles*/
+    for (int j=0; j<newPositions.size(); j++){
+        float _thisbubbleX=newPositions[j].x;
+        float _thisbubbleY=newPositions[j].y;
+        /*look through all the global bubbles for a position*/
+        for (int k=0; k<this->BubbleList.size(); k++){
+            float _eval_bubble_X=this->BubbleList[k]->last_x;
+            float _eval_bubble_Y=this->BubbleList[k]->last_y;
+
+            if ((_eval_bubble_X-_thisbubbleX<5) && (fabs(_eval_bubble_Y-_thisbubbleY)<4)){
+                    *this->BubbleList[k]<<newPositions[j];
+                    break;
+            }
+        }
+
+    }
+
+    //debugShow(tempPresentation);
+}
+
+void L3Localizer::printBubbleList(void){
+
+    for (int k=0; k<this->BubbleList.size(); k++){
+
+        this->BubbleList[k]->printAllXY();
+
+    }
+
+}
 
 void L3Localizer::LocalizeOMatic(std::string imageStorePath)
 {
@@ -278,6 +365,10 @@ void L3Localizer::LocalizeOMatic(std::string imageStorePath)
     }
     /*Run the analyzer series*/
     this->CalculateInitialBubbleParams();
+    this->CalculatePostTriggerFrameParams(1);
+    this->CalculatePostTriggerFrameParams(2);
+    this->CalculatePostTriggerFrameParams(3);
+    this->printBubbleList();
     //this->numBubbleMultiplicity=0;
 
 

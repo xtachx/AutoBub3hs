@@ -50,6 +50,7 @@ set(SOURCE
    ${CMAKE_CURRENT_SOURCE_DIR}/AlgorithmTraining/Trainer.cpp
    ${CMAKE_CURRENT_SOURCE_DIR}/AnalyzerUnit.cpp
    ${CMAKE_CURRENT_SOURCE_DIR}/PICOFormatWriter/PICOFormatWriter.cpp
+   ${CMAKE_CURRENT_SOURCE_DIR}/bubble/bubble.cpp
 )
 set(HEADERS
    ${CMAKE_CURRENT_SOURCE_DIR}/common/CommonDatatypes.h
@@ -57,7 +58,7 @@ set(HEADERS
    ${CMAKE_CURRENT_SOURCE_DIR}/AlgorithmTraining/Trainer.hpp
    ${CMAKE_CURRENT_SOURCE_DIR}/AnalyzerUnit.hpp
    ${CMAKE_CURRENT_SOURCE_DIR}/PICOFormatWriter/PICOFormatWriter.hpp
-
+   ${CMAKE_CURRENT_SOURCE_DIR}/bubble/bubble.hpp
 )
 
 
