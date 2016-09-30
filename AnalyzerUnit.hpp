@@ -32,8 +32,7 @@ class AnalyzerUnit{
         std::vector<std::string> CameraFrames;
         int CameraNumber;
 
-        /*Status checks*/
-        bool okToProceed = true;
+
 
 
     public:
@@ -62,6 +61,8 @@ class AnalyzerUnit{
         /*Training Data*/
         std::vector<bubble*> BubbleList;
 
+        /*Status checks*/
+        bool okToProceed = true;
 
 
 };

@@ -88,16 +88,20 @@ void OutputWriter::stageCameraOutput(std::vector<bubble*> BubbleRectIn, int came
  */
 
 
-void OutputWriter::stageCameraOutputError(int camera, int error){
+void OutputWriter::stageCameraOutputError(int camera, int error, int event){
 
     if (camera==0) {
         this->BubbleData0.StatusCode = error;
+        this->BubbleData0.event = event;
     } else if (camera==1) {
         this->BubbleData1.StatusCode = error;
+        this->BubbleData1.event = event;
     } else if (camera==2) {
         this->BubbleData2.StatusCode = error;
+        this->BubbleData2.event = event;
     } else if (camera==3) {
         this->BubbleData3.StatusCode = error;
+        this->BubbleData3.event = event;
     }
 
 }

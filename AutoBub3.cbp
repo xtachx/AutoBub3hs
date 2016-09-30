@@ -85,6 +85,8 @@
 		<Unit filename="LBP/main.cxx" />
 		<Unit filename="PICOFormatWriter/PICOFormatWriter.cpp" />
 		<Unit filename="PICOFormatWriter/PICOFormatWriter.hpp" />
+		<Unit filename="PICOFormatWriter/PICOFormatWriterV2.cpp" />
+		<Unit filename="PICOFormatWriter/PICOFormatWriterV2.hpp" />
 		<Unit filename="ParseFolder/ParseFolder.cpp" />
 		<Unit filename="ParseFolder/ParseFolder.hpp" />
 		<Unit filename="SQLiteDBstorage/CMakeLists.txt" />

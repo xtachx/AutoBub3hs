@@ -7,6 +7,7 @@
 #include <opencv2/opencv.hpp>
 #include "Trainer.hpp"
 #include "../LBP/LBPUser.hpp"
+#include "../ImageEntropyMethods/ImageEntropyMethods.hpp"
 
 
 //#include "ImageEntropyMethods/ImageEntropyMethods.hpp"
@@ -98,9 +99,10 @@ void Trainer::MakeAvgSigmaImage(bool PerformLBPOnImages=false)
 
     this->isLBPApplied = PerformLBPOnImages;
     /*Declare memory to store all the images coming in*/
-    std::vector<cv::Mat> backgroundImagingArray;
+    std::vector<cv::Mat> backgroundImagingArray, TestingForEntropyArray;
 
-    cv::Mat tempImagingProcess, tempImagingLBP;
+    cv::Mat tempImagingProcess, tempImagingLBP, tempTestingEntropy;
+    float singleEntropyTest=0;
     int rows, cols;
 
     /*Store all the images*/
@@ -114,24 +116,31 @@ void Trainer::MakeAvgSigmaImage(bool PerformLBPOnImages=false)
         std::string ImageFilePattern = "cam"+std::to_string(this->camera)+"_image";
         this->ParseAndSortFramesInFolder(ImageFilePattern, ThisEventDir);
 
+        TestingForEntropyArray.clear();
+
+        /*The for block loads images 0 and 1 from each event*/
         for (std::vector<int>::iterator it = TrainingSequence.begin(); it !=TrainingSequence.end(); it++)
         {
             thisEventLocation = ThisEventDir + this->CameraFrames[*it];
             //std::cout<<"Frame: "<<thisEventLocation<<"\n";
             tempImagingProcess = cv::imread(thisEventLocation, 0);
-
-            if (PerformLBPOnImages){
-                tempImagingLBP = lbpImageSingleChan(tempImagingProcess);
-                backgroundImagingArray.push_back(tempImagingLBP);
-            }
-            else
-            {
-                backgroundImagingArray.push_back(tempImagingProcess);
-            }
+            TestingForEntropyArray.push_back(tempImagingProcess);
         }
+        /*Test entropy for the first 2 trained sets*/
+        tempTestingEntropy = TestingForEntropyArray[1]-TestingForEntropyArray[0];
+        singleEntropyTest = calculateEntropyFrame(tempTestingEntropy);
+        if (singleEntropyTest <= 0.0005) {
+            //printf ("Entropy: %f\n", singleEntropyTest);
+            for (cv::Mat image : TestingForEntropyArray) backgroundImagingArray.push_back(image);
+        }
+
+        //backgroundImagingArray
         /*GC*/
         this->CameraFrames.clear();
     }
+
+
+
 
 
 
