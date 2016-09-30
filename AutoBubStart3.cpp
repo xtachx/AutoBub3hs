@@ -121,26 +121,32 @@ int main(int argc, char** argv)
          ********************************/
 
         //Generate File lists to process for this event
-        std::cout<<"Camera 0: \n";
+        //std::cout<<"Camera 0: \n";
         AnalyzerC0->ParseAndSortFramesInFolder();
         AnalyzerC0->FindTriggerFrame();
         //cout<<"Trigger Frame: "<<AnalyzerC0->MatTrigFrame<<"\n";
-        AnalyzerC0->LocalizeOMatic(out_dir);
-        PICO60Output->stageCameraOutput(AnalyzerC0->BubbleList,0, AnalyzerC0->MatTrigFrame, actualEventNumber);
-
+        if (AnalyzerC0->okToProceed){
+            AnalyzerC0->LocalizeOMatic(out_dir);
+            PICO60Output->stageCameraOutput(AnalyzerC0->BubbleList,0, AnalyzerC0->MatTrigFrame, actualEventNumber);
+        } else {
+        PICO60Output->stageCameraOutputError(0,-2, actualEventNumber);
+        }
 
         /* ***************************
          * ***** Camera 1 Operations ******
          ********************************/
 
         //Generate File lists to process for this event
-        std::cout<<"Camera 1: \n";
+        //std::cout<<"Camera 1: \n";
         AnalyzerC1->ParseAndSortFramesInFolder();
         AnalyzerC1->FindTriggerFrame();
         //cout<<"Trigger Frame: "<<AnalyzerC1->MatTrigFrame<<"\n";
+        if (AnalyzerC1->okToProceed){
         AnalyzerC1->LocalizeOMatic(out_dir);
         PICO60Output->stageCameraOutput(AnalyzerC1->BubbleList,1, AnalyzerC1->MatTrigFrame, actualEventNumber);
-
+        } else {
+        PICO60Output->stageCameraOutputError(1,-2, actualEventNumber);
+        }
 
 
         /* ***************************
@@ -148,26 +154,32 @@ int main(int argc, char** argv)
          ********************************/
 
         //Generate File lists to process for this event
-        std::cout<<"Camera 2: \n";
+        //std::cout<<"Camera 2: \n";
         AnalyzerC2->ParseAndSortFramesInFolder();
         AnalyzerC2->FindTriggerFrame();
         //cout<<"Trigger Frame: "<<AnalyzerC2->MatTrigFrame<<"\n";
+        if (AnalyzerC2->okToProceed){
         AnalyzerC2->LocalizeOMatic(out_dir);
         PICO60Output->stageCameraOutput(AnalyzerC2->BubbleList,2, AnalyzerC2->MatTrigFrame, actualEventNumber);
-
+        } else {
+        PICO60Output->stageCameraOutputError(2,-2, actualEventNumber);
+        }
 
         /* ***************************
          * ***** Camera 3 Operations ******
          ********************************/
 
         //Generate File lists to process for this event
-        std::cout<<"Camera 3: \n";
+        //std::cout<<"Camera 3: \n";
         AnalyzerC3->ParseAndSortFramesInFolder();
         AnalyzerC3->FindTriggerFrame();
         //cout<<"Trigger Frame: "<<AnalyzerC3->MatTrigFrame<<"\n";
+        if (AnalyzerC3->okToProceed){
         AnalyzerC3->LocalizeOMatic(out_dir);
         PICO60Output->stageCameraOutput(AnalyzerC3->BubbleList,3, AnalyzerC3->MatTrigFrame, actualEventNumber);
-
+        } else {
+        PICO60Output->stageCameraOutputError(3,-2, actualEventNumber);
+        }
 
 
 

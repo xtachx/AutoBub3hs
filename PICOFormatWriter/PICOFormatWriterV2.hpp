@@ -53,7 +53,7 @@ class OutputWriter{
         /*Compute the mean and std*/
         void writeHeader(void );
         void stageCameraOutput(std::vector<bubble*> , int, int, int);
-        void stageCameraOutputError(int, int);
+        void stageCameraOutputError(int, int, int);
 
         void formEachBubbleOutput(int, int&, int );
         void writeCameraOutput(void);

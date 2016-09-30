@@ -374,7 +374,7 @@ void L3Localizer::LocalizeOMatic(std::string imageStorePath)
     this->CalculatePostTriggerFrameParams(1);
     this->CalculatePostTriggerFrameParams(2);
     this->CalculatePostTriggerFrameParams(3);
-    this->printBubbleList();
+    //this->printBubbleList();
     //this->numBubbleMultiplicity=0;
 
 
