@@ -302,6 +302,12 @@ void L3Localizer::CalculatePostTriggerFrameParams(int postTrigFrameNumber){
 
     }
 
+
+    /*UnLock the bubble descriptors*/
+    for (int a=0; a<this->BubbleList.size(); a++){
+        this->BubbleList[a]->lockThisIteration=false;
+    }
+
     /*Match these with the global bubbles*/
     for (int j=0; j<newPositions.size(); j++){
         float _thisbubbleX=newPositions[j].x;
