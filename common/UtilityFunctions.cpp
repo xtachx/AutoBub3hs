@@ -15,6 +15,7 @@
 
 
 
+
 void debugShow(cv::Mat& frame)
 {
 
@@ -61,4 +62,14 @@ void showHistogramImage(cv::Mat& frame)
         std::cout<<i<<" "<<frame_hist.at<float>(i)<<"\n";
     }
 
+}
+
+/*Spinning cursors*/
+
+void advance_cursor() {
+  static int pos=0;
+  char cursor[4]={'/','-','\\','|'};
+  printf("%c\b", cursor[pos]);
+  fflush(stdout);
+  pos = (pos+1) % 4;
 }

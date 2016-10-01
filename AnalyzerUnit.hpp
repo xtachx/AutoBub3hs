@@ -15,7 +15,7 @@ class AnalyzerUnit{
 
         /*Error handling stuff*/
         int StatusCode=0;
-        int TriggerFrameIdentificationStatus=0; //0=OK | 1=Trigger on frame 1 | 2=No trigger found
+
 
 
         /*Training frames and detection frames*/
@@ -63,6 +63,7 @@ class AnalyzerUnit{
 
         /*Status checks*/
         bool okToProceed = true;
+        int TriggerFrameIdentificationStatus=0; //0=OK | 1=Trigger on frame 1 | 2=No trigger found
 
 
 };
