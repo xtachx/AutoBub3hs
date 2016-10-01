@@ -8,6 +8,7 @@
 #include "Trainer.hpp"
 #include "../LBP/LBPUser.hpp"
 #include "../ImageEntropyMethods/ImageEntropyMethods.hpp"
+#include "../common/UtilityFunctions.hpp"
 
 
 //#include "ImageEntropyMethods/ImageEntropyMethods.hpp"
@@ -105,13 +106,15 @@ void Trainer::MakeAvgSigmaImage(bool PerformLBPOnImages=false)
     float singleEntropyTest=0;
     int rows, cols;
 
+
+    printf("Camera %d training ... ",this->camera);
     /*Store all the images*/
     std::string ThisEventDir, thisEventLocation;
+
 
     for (int i=0; i<this->EventList.size(); i++)
     {
         ThisEventDir = this->EventDir+EventList[i]+"/Images/";
-        printf("Now processing %s\n", ThisEventDir.c_str());
 
         std::string ImageFilePattern = "cam"+std::to_string(this->camera)+"_image";
         this->ParseAndSortFramesInFolder(ImageFilePattern, ThisEventDir);
@@ -131,6 +134,8 @@ void Trainer::MakeAvgSigmaImage(bool PerformLBPOnImages=false)
         singleEntropyTest = calculateEntropyFrame(tempTestingEntropy);
         if (singleEntropyTest <= 0.0005) {
             //printf ("Entropy: %f\n", singleEntropyTest);
+            //printf("Training on: %s\n", EventList[i].c_str());
+            advance_cursor();
             for (cv::Mat image : TestingForEntropyArray) backgroundImagingArray.push_back(image);
         }
 
@@ -220,6 +225,8 @@ void Trainer::MakeAvgSigmaImage(bool PerformLBPOnImages=false)
     this->TrainedSigmaImage = sigmaImageProcess;
     //cv::imwrite( "SigmaMap.png", sigmaImageWrite );
     //cv::imwrite( "MeanMap.png", meanImageProcess );
+
+    printf("complete.\n");
 
 }
 

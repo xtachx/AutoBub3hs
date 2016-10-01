@@ -23,7 +23,7 @@
 
 void debugShow(cv::Mat&);
 void showHistogramImage(cv::Mat& );
-
+void advance_cursor(void );
 
 
 #endif

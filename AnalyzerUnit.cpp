@@ -122,7 +122,7 @@ void AnalyzerUnit::FindTriggerFrame(void ){
     comparisonFrame = cv::imread(refImg.c_str());
 
     /*Start by flagging that a bubble wasnt found, flag gets changed to 0 if all goes well*/
-    this->TriggerFrameIdentificationStatus=2;
+    this->TriggerFrameIdentificationStatus=-3;
 
     //for (int i = 1; i < this->CameraFrames.size(); i++) {
     for (int i = 1; i < 30; i++) {
@@ -146,12 +146,12 @@ void AnalyzerUnit::FindTriggerFrame(void ){
 
 
         /*Calculate entropy of ROI*/
-        if (i==1 and singleEntropy>5.0005){
-            printf("************ ---> WARNING <--******************\n");
-            printf("Entropy is massive - something has triggered at the very first frame \n");
-            printf("Autobub Image analysis is meaningless on this data set. Manual check recommended\n");
-            printf(" *** Autobub skip --> *** \n");
-            this->TriggerFrameIdentificationStatus = 1;
+        if (i==1 and singleEntropy>0.0005){
+            //printf("************ ---> WARNING <--******************\n");
+            //printf("Entropy is massive - something has triggered at the very first frame | ");
+            //printf("Autobub Image analysis is meaningless on this data set. Manual check recommended\n");
+            //printf(" *** Autobub skip --> *** \n");
+            this->TriggerFrameIdentificationStatus = -2;
             this->okToProceed=false;
             break;
             //exit (EXIT_FAILURE);
@@ -169,7 +169,7 @@ void AnalyzerUnit::FindTriggerFrame(void ){
     }
 
 
-    if  (this->TriggerFrameIdentificationStatus==2) {
+    if  (this->TriggerFrameIdentificationStatus==-3) {
         //printf("\n**No bubbles were found. Manually check this folder**\n");
         this->okToProceed=false;
         this->MatTrigFrame;

@@ -33,6 +33,7 @@
 #include "AlgorithmTraining/Trainer.hpp"
 #include "PICOFormatWriter/PICOFormatWriterV2.hpp"
 #include "bubble/bubble.hpp"
+#include "common/UtilityFunctions.hpp"
 
 
 const int evalEntropyThresholdFrames = 2;
@@ -87,6 +88,8 @@ int main(int argc, char** argv)
     /*Learn Mode
      *Train on a given set of images for background subtract
      */
+    printf("**Starting training. AutoBub is in learn mode**\n");
+
     Trainer *TrainC0 = new Trainer(0, EventList, eventDir);
     TrainC0->MakeAvgSigmaImage(false);
 
@@ -99,6 +102,7 @@ int main(int argc, char** argv)
     Trainer *TrainC3 = new Trainer(3, EventList, eventDir);
     TrainC3->MakeAvgSigmaImage(false);
 
+    printf("**Training complete. AutoBub is now in detect mode**\n");
     /*Detect mode
      *Iterate through all the events in the list and detect bubbles in them one by one
      *A seprate procedure will store them to a file at the end
@@ -106,7 +110,8 @@ int main(int argc, char** argv)
 
     for (int evi = 0; evi < EventList.size(); evi++) {
         std::string imageDir=eventDir+EventList[evi]+"/Images/";
-        std::cout<<"Processing event: "<<EventList[evi]<<" / "<<EventList.size()<<"\n";
+        //std::cout<<"Processing event: "<<EventList[evi]<<" / "<<EventList.size()<<"\n";
+        printf("\rProcessing event: %s / %d  ... ", EventList[evi].c_str(), EventList.size()-1);
         AnalyzerUnit *AnalyzerC0 = new L3Localizer(EventList[evi], imageDir, 0, false, &TrainC0); /*EventID, imageDir and camera number*/
         AnalyzerUnit *AnalyzerC1 = new L3Localizer(EventList[evi], imageDir, 1, false, &TrainC1); /*EventID, imageDir and camera number*/
         AnalyzerUnit *AnalyzerC2 = new L3Localizer(EventList[evi], imageDir, 2, false, &TrainC2); /*EventID, imageDir and camera number*/
@@ -116,6 +121,9 @@ int main(int argc, char** argv)
 
 
         int actualEventNumber = atoi(EventList[evi].c_str());
+
+        /*Fancy coursors!*/
+        advance_cursor();
         /* ***************************
          * ***** Camera 0 Operations ******
          ********************************/
@@ -129,8 +137,12 @@ int main(int argc, char** argv)
             AnalyzerC0->LocalizeOMatic(out_dir);
             PICO60Output->stageCameraOutput(AnalyzerC0->BubbleList,0, AnalyzerC0->MatTrigFrame, actualEventNumber);
         } else {
-        PICO60Output->stageCameraOutputError(0,-2, actualEventNumber);
+        PICO60Output->stageCameraOutputError(0,AnalyzerC0->TriggerFrameIdentificationStatus, actualEventNumber);
         }
+
+
+        /*Fancy coursors!*/
+        advance_cursor();
 
         /* ***************************
          * ***** Camera 1 Operations ******
@@ -145,9 +157,12 @@ int main(int argc, char** argv)
         AnalyzerC1->LocalizeOMatic(out_dir);
         PICO60Output->stageCameraOutput(AnalyzerC1->BubbleList,1, AnalyzerC1->MatTrigFrame, actualEventNumber);
         } else {
-        PICO60Output->stageCameraOutputError(1,-2, actualEventNumber);
+        PICO60Output->stageCameraOutputError(1,AnalyzerC1->TriggerFrameIdentificationStatus, actualEventNumber);
         }
 
+
+        /*Fancy coursors!*/
+        advance_cursor();
 
         /* ***************************
          * ***** Camera 2 Operations ******
@@ -162,8 +177,12 @@ int main(int argc, char** argv)
         AnalyzerC2->LocalizeOMatic(out_dir);
         PICO60Output->stageCameraOutput(AnalyzerC2->BubbleList,2, AnalyzerC2->MatTrigFrame, actualEventNumber);
         } else {
-        PICO60Output->stageCameraOutputError(2,-2, actualEventNumber);
+        PICO60Output->stageCameraOutputError(2,AnalyzerC2->TriggerFrameIdentificationStatus, actualEventNumber);
         }
+
+
+        /*Fancy coursors!*/
+        advance_cursor();
 
         /* ***************************
          * ***** Camera 3 Operations ******
@@ -178,8 +197,12 @@ int main(int argc, char** argv)
         AnalyzerC3->LocalizeOMatic(out_dir);
         PICO60Output->stageCameraOutput(AnalyzerC3->BubbleList,3, AnalyzerC3->MatTrigFrame, actualEventNumber);
         } else {
-        PICO60Output->stageCameraOutputError(3,-2, actualEventNumber);
+        PICO60Output->stageCameraOutputError(3,AnalyzerC3->TriggerFrameIdentificationStatus, actualEventNumber);
         }
+
+
+        /*Fancy coursors!*/
+        advance_cursor();
 
 
 
@@ -190,6 +213,8 @@ int main(int argc, char** argv)
         delete AnalyzerC2;
         delete AnalyzerC3;
     }
+
+    printf("run complete.\n");
 
     /*Write staged output*/
 
