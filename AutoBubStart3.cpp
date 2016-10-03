@@ -43,20 +43,25 @@ std::vector<int> badEvents;
 
 
 
-/* ************************************/
-
-
-
 /*Workaround because fermi grid is using old gcc*/
-bool BubblePosZsort(cv::RotatedRect a, cv::RotatedRect b){return a.center.y<b.center.y;}
-bool eventNameOrderSort(std::string a, std::string b){return std::stoi(a)<std::stoi(b);}
+bool BubblePosZsort(cv::RotatedRect a, cv::RotatedRect b)
+{
+    return a.center.y<b.center.y;
+}
+bool eventNameOrderSort(std::string a, std::string b)
+{
+    return std::stoi(a)<std::stoi(b);
+}
 
+
+/*The main autobub code starts here*/
 int main(int argc, char** argv)
 {
 
     printf("This is AutoBub v3, the automatic unified bubble finder code for all chambers\n");
 
-    if (argc < 3) {
+    if (argc < 3)
+    {
         printf("Not enough parameters.\nUsage: abub <location of data> <run number> <directory for output file>\nEg: abub /coupp/data/30l-13/ 20140501_0 /home/coupp/recon/\n");
         printf("Note the trailing slashes.\n");
         return -1;
@@ -76,13 +81,27 @@ int main(int argc, char** argv)
     /*Construct list of events*/
     std::vector<std::string> EventList;
     int* EVstatuscode = 0;
-    GetEventDirLists(eventDir.c_str(), EventList, EVstatuscode);
+
+    try
+    {
+        GetEventDirLists(eventDir.c_str(), EventList, EVstatuscode);
+
+    /*Crash handler at the begining of the program - writes -5 if the folder could not be read*/
+    }
+    catch (...)
+    {
+        std::cout<<"Failed to read the images from the run. Autobub cannot continue.\n";
+        PICO60Output->stageCameraOutputError(0,-5, -1);
+        PICO60Output->stageCameraOutputError(1,-5, -1);
+        PICO60Output->stageCameraOutputError(2,-5, -1);
+        PICO60Output->stageCameraOutputError(3,-5, -1);
+        PICO60Output->writeCameraOutput();
+        return -5;
+    }
 
     /*A sort is unnecessary at this level, but it is good practice and does not cost extra resources*/
     std::sort(EventList.begin(), EventList.end(), eventNameOrderSort);
     /*Event list is now constructed*/
-    /* ************************************* */
-
 
 
     /*Learn Mode
@@ -103,12 +122,15 @@ int main(int argc, char** argv)
     TrainC3->MakeAvgSigmaImage(false);
 
     printf("**Training complete. AutoBub is now in detect mode**\n");
+
+
     /*Detect mode
      *Iterate through all the events in the list and detect bubbles in them one by one
      *A seprate procedure will store them to a file at the end
      */
 
-    for (int evi = 0; evi < EventList.size(); evi++) {
+    for (int evi = 0; evi < EventList.size(); evi++)
+    {
         std::string imageDir=eventDir+EventList[evi]+"/Images/";
         //std::cout<<"Processing event: "<<EventList[evi]<<" / "<<EventList.size()<<"\n";
         printf("\rProcessing event: %s / %d  ... ", EventList[evi].c_str(), EventList.size()-1);
@@ -117,29 +139,40 @@ int main(int argc, char** argv)
         AnalyzerUnit *AnalyzerC2 = new L3Localizer(EventList[evi], imageDir, 2, false, &TrainC2); /*EventID, imageDir and camera number*/
         AnalyzerUnit *AnalyzerC3 = new L3Localizer(EventList[evi], imageDir, 3, false, &TrainC3); /*EventID, imageDir and camera number*/
 
-
-
-
+        /*We need the actual event number in case folders with events are missing*/
         int actualEventNumber = atoi(EventList[evi].c_str());
 
         /*Fancy coursors!*/
         advance_cursor();
+
+
         /* ***************************
          * ***** Camera 0 Operations ******
          ********************************/
 
-        //Generate File lists to process for this event
-        //std::cout<<"Camera 0: \n";
-        AnalyzerC0->ParseAndSortFramesInFolder();
-        AnalyzerC0->FindTriggerFrame();
-        //cout<<"Trigger Frame: "<<AnalyzerC0->MatTrigFrame<<"\n";
-        if (AnalyzerC0->okToProceed){
-            AnalyzerC0->LocalizeOMatic(out_dir);
-            PICO60Output->stageCameraOutput(AnalyzerC0->BubbleList,0, AnalyzerC0->MatTrigFrame, actualEventNumber);
-        } else {
-        PICO60Output->stageCameraOutputError(0,AnalyzerC0->TriggerFrameIdentificationStatus, actualEventNumber);
-        }
+        /*Exception handling - per camera*/
 
+        try
+        {
+            AnalyzerC0->ParseAndSortFramesInFolder();
+            AnalyzerC0->FindTriggerFrame();
+            //cout<<"Trigger Frame: "<<AnalyzerC0->MatTrigFrame<<"\n";
+            if (AnalyzerC0->okToProceed)
+            {
+                AnalyzerC0->LocalizeOMatic(out_dir);
+                PICO60Output->stageCameraOutput(AnalyzerC0->BubbleList,0, AnalyzerC0->MatTrigFrame, actualEventNumber);
+            }
+            else
+            {
+                PICO60Output->stageCameraOutputError(0,AnalyzerC0->TriggerFrameIdentificationStatus, actualEventNumber);
+            }
+
+        /*The exception block for camera 0 specific crashes. outputs -6 for the error*/
+        }
+        catch (...)
+        {
+            PICO60Output->stageCameraOutputError(0,-6, actualEventNumber);
+        }
 
         /*Fancy coursors!*/
         advance_cursor();
@@ -148,18 +181,27 @@ int main(int argc, char** argv)
          * ***** Camera 1 Operations ******
          ********************************/
 
-        //Generate File lists to process for this event
-        //std::cout<<"Camera 1: \n";
-        AnalyzerC1->ParseAndSortFramesInFolder();
-        AnalyzerC1->FindTriggerFrame();
-        //cout<<"Trigger Frame: "<<AnalyzerC1->MatTrigFrame<<"\n";
-        if (AnalyzerC1->okToProceed){
-        AnalyzerC1->LocalizeOMatic(out_dir);
-        PICO60Output->stageCameraOutput(AnalyzerC1->BubbleList,1, AnalyzerC1->MatTrigFrame, actualEventNumber);
-        } else {
-        PICO60Output->stageCameraOutputError(1,AnalyzerC1->TriggerFrameIdentificationStatus, actualEventNumber);
-        }
+        try
+        {
+            AnalyzerC1->ParseAndSortFramesInFolder();
+            AnalyzerC1->FindTriggerFrame();
 
+            if (AnalyzerC1->okToProceed)
+            {
+                AnalyzerC1->LocalizeOMatic(out_dir);
+                PICO60Output->stageCameraOutput(AnalyzerC1->BubbleList,1, AnalyzerC1->MatTrigFrame, actualEventNumber);
+            }
+            else
+            {
+                PICO60Output->stageCameraOutputError(1,AnalyzerC1->TriggerFrameIdentificationStatus, actualEventNumber);
+            }
+
+        /*The exception block for camera 1 specific crashes. outputs -6 for the error*/
+        }
+        catch (...)
+        {
+            PICO60Output->stageCameraOutputError(1,-6, actualEventNumber);
+        }
 
         /*Fancy coursors!*/
         advance_cursor();
@@ -168,18 +210,27 @@ int main(int argc, char** argv)
          * ***** Camera 2 Operations ******
          ********************************/
 
-        //Generate File lists to process for this event
-        //std::cout<<"Camera 2: \n";
-        AnalyzerC2->ParseAndSortFramesInFolder();
-        AnalyzerC2->FindTriggerFrame();
-        //cout<<"Trigger Frame: "<<AnalyzerC2->MatTrigFrame<<"\n";
-        if (AnalyzerC2->okToProceed){
-        AnalyzerC2->LocalizeOMatic(out_dir);
-        PICO60Output->stageCameraOutput(AnalyzerC2->BubbleList,2, AnalyzerC2->MatTrigFrame, actualEventNumber);
-        } else {
-        PICO60Output->stageCameraOutputError(2,AnalyzerC2->TriggerFrameIdentificationStatus, actualEventNumber);
-        }
+        try
+        {
+            AnalyzerC2->ParseAndSortFramesInFolder();
+            AnalyzerC2->FindTriggerFrame();
+            //cout<<"Trigger Frame: "<<AnalyzerC2->MatTrigFrame<<"\n";
+            if (AnalyzerC2->okToProceed)
+            {
+                AnalyzerC2->LocalizeOMatic(out_dir);
+                PICO60Output->stageCameraOutput(AnalyzerC2->BubbleList,2, AnalyzerC2->MatTrigFrame, actualEventNumber);
+            }
+            else
+            {
+                PICO60Output->stageCameraOutputError(2,AnalyzerC2->TriggerFrameIdentificationStatus, actualEventNumber);
+            }
 
+        /*The exception block for camera 2 specific crashes. outputs -6 for the error*/
+        }
+        catch (...)
+        {
+            PICO60Output->stageCameraOutputError(2,-6, actualEventNumber);
+        }
 
         /*Fancy coursors!*/
         advance_cursor();
@@ -188,25 +239,35 @@ int main(int argc, char** argv)
          * ***** Camera 3 Operations ******
          ********************************/
 
-        //Generate File lists to process for this event
-        //std::cout<<"Camera 3: \n";
-        AnalyzerC3->ParseAndSortFramesInFolder();
-        AnalyzerC3->FindTriggerFrame();
-        //cout<<"Trigger Frame: "<<AnalyzerC3->MatTrigFrame<<"\n";
-        if (AnalyzerC3->okToProceed){
-        AnalyzerC3->LocalizeOMatic(out_dir);
-        PICO60Output->stageCameraOutput(AnalyzerC3->BubbleList,3, AnalyzerC3->MatTrigFrame, actualEventNumber);
-        } else {
-        PICO60Output->stageCameraOutputError(3,AnalyzerC3->TriggerFrameIdentificationStatus, actualEventNumber);
-        }
+        try
+        {
 
+            AnalyzerC3->ParseAndSortFramesInFolder();
+            AnalyzerC3->FindTriggerFrame();
+            //cout<<"Trigger Frame: "<<AnalyzerC3->MatTrigFrame<<"\n";
+            if (AnalyzerC3->okToProceed)
+            {
+                AnalyzerC3->LocalizeOMatic(out_dir);
+                PICO60Output->stageCameraOutput(AnalyzerC3->BubbleList,3, AnalyzerC3->MatTrigFrame, actualEventNumber);
+            }
+            else
+            {
+                PICO60Output->stageCameraOutputError(3,AnalyzerC3->TriggerFrameIdentificationStatus, actualEventNumber);
+            }
+
+        /*The exception block for camera 3 specific crashes. outputs -6 for the error*/
+        }
+        catch (...)
+        {
+            PICO60Output->stageCameraOutputError(3,-6, actualEventNumber);
+        }
 
         /*Fancy coursors!*/
         advance_cursor();
 
 
 
-
+        /*Write and commit output after each iteration, so in the event of a crash, its not lost*/
         PICO60Output->writeCameraOutput();
         delete AnalyzerC0;
         delete AnalyzerC1;
@@ -215,8 +276,6 @@ int main(int argc, char** argv)
     }
 
     printf("run complete.\n");
-
-    /*Write staged output*/
 
 
     /*GC*/
