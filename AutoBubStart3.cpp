@@ -88,7 +88,7 @@ int main(int argc, char** argv)
 
     /*Crash handler at the begining of the program - writes -5 if the folder could not be read*/
     }
-    catch (...)
+    catch (std::exception &e)
     {
         std::cout<<"Failed to read the images from the run. Autobub cannot continue.\n";
         PICO60Output->stageCameraOutputError(0,-5, -1);
@@ -117,13 +117,12 @@ int main(int argc, char** argv)
 
 
     try {
-
         TrainC0->MakeAvgSigmaImage(false);
         TrainC1->MakeAvgSigmaImage(false);
         TrainC2->MakeAvgSigmaImage(false);
         TrainC3->MakeAvgSigmaImage(false);
 
-    } catch (...) {
+    } catch (cv::Exception &e) {
         std::cout<<"Failed to train on images from the run. Autobub cannot continue.\n";
         PICO60Output->stageCameraOutputError(0,-7, -1);
         PICO60Output->stageCameraOutputError(1,-7, -1);
@@ -183,7 +182,7 @@ int main(int argc, char** argv)
 
         /*The exception block for camera 0 specific crashes. outputs -6 for the error*/
         }
-        catch (...)
+        catch (cv::Exception &e)
         {
             PICO60Output->stageCameraOutputError(0,-6, actualEventNumber);
         }
@@ -212,7 +211,7 @@ int main(int argc, char** argv)
 
         /*The exception block for camera 1 specific crashes. outputs -6 for the error*/
         }
-        catch (...)
+        catch (cv::Exception &e)
         {
             PICO60Output->stageCameraOutputError(1,-6, actualEventNumber);
         }
@@ -241,7 +240,7 @@ int main(int argc, char** argv)
 
         /*The exception block for camera 2 specific crashes. outputs -6 for the error*/
         }
-        catch (...)
+        catch (cv::Exception &e)
         {
             PICO60Output->stageCameraOutputError(2,-6, actualEventNumber);
         }
@@ -271,7 +270,7 @@ int main(int argc, char** argv)
 
         /*The exception block for camera 3 specific crashes. outputs -6 for the error*/
         }
-        catch (...)
+        catch (cv::Exception &e)
         {
             PICO60Output->stageCameraOutputError(3,-6, actualEventNumber);
         }
