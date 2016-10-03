@@ -10,14 +10,16 @@ make
 
 Output:
 
-abub3_<run number>.txt in PICO recon format. You can comment out the section on saving diagnostic images under AutoBubStart.cpp to see the frames with the recon done on them. 
+abub3_<run number>.txt in PICO recon format. You can comment out the section on saving diagnostic images under AutoBubStart.cpp to see the frames with the recon done on them.
 
 The error codes in the recon file are as follows:
 
 -1: Entropy did trigger but no bubble was found
 -2: Entropy was massive in the first frame / usually a late trigger. Analysis not performed.
 -3: Entropy did not trigger on the images of that camera series. (usually if other cameras see a trigger)
-
+-5: Failed to make a file list of all files in the run (data corruption?)
+-6: Failed to analyze / segfault (malformed images / data corruption /missing images)
+-7: Failed to train on the dataset (some event folders might be empty)
 
 
 

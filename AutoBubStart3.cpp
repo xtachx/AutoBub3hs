@@ -109,17 +109,30 @@ int main(int argc, char** argv)
      */
     printf("**Starting training. AutoBub is in learn mode**\n");
 
-    Trainer *TrainC0 = new Trainer(0, EventList, eventDir);
-    TrainC0->MakeAvgSigmaImage(false);
+    try {
+        Trainer *TrainC0 = new Trainer(0, EventList, eventDir);
+        TrainC0->MakeAvgSigmaImage(false);
 
-    Trainer *TrainC1 = new Trainer(1, EventList, eventDir);
-    TrainC1->MakeAvgSigmaImage(false);
+        Trainer *TrainC1 = new Trainer(1, EventList, eventDir);
+        TrainC1->MakeAvgSigmaImage(false);
 
-    Trainer *TrainC2 = new Trainer(2, EventList, eventDir);
-    TrainC2->MakeAvgSigmaImage(false);
+        Trainer *TrainC2 = new Trainer(2, EventList, eventDir);
+        TrainC2->MakeAvgSigmaImage(false);
 
-    Trainer *TrainC3 = new Trainer(3, EventList, eventDir);
-    TrainC3->MakeAvgSigmaImage(false);
+        Trainer *TrainC3 = new Trainer(3, EventList, eventDir);
+        TrainC3->MakeAvgSigmaImage(false);
+
+    } catch (...) {
+        std::cout<<"Failed to train on images from the run. Autobub cannot continue.\n";
+        PICO60Output->stageCameraOutputError(0,-7, -1);
+        PICO60Output->stageCameraOutputError(1,-7, -1);
+        PICO60Output->stageCameraOutputError(2,-7, -1);
+        PICO60Output->stageCameraOutputError(3,-7, -1);
+        PICO60Output->writeCameraOutput();
+        return -7;
+    }
+
+
 
     printf("**Training complete. AutoBub is now in detect mode**\n");
 
@@ -264,7 +277,6 @@ int main(int argc, char** argv)
 
         /*Fancy coursors!*/
         advance_cursor();
-
 
 
         /*Write and commit output after each iteration, so in the event of a crash, its not lost*/
