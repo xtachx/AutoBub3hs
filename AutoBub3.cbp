@@ -89,6 +89,7 @@
 		<Unit filename="PICOFormatWriter/PICOFormatWriterV2.hpp" />
 		<Unit filename="ParseFolder/ParseFolder.cpp" />
 		<Unit filename="ParseFolder/ParseFolder.hpp" />
+		<Unit filename="README.md" />
 		<Unit filename="SQLiteDBstorage/CMakeLists.txt" />
 		<Unit filename="bubble/bubble.cpp" />
 		<Unit filename="bubble/bubble.hpp" />
