@@ -109,17 +109,18 @@ int main(int argc, char** argv)
      */
     printf("**Starting training. AutoBub is in learn mode**\n");
 
+    Trainer *TrainC0 = new Trainer(0, EventList, eventDir);
+    Trainer *TrainC1 = new Trainer(1, EventList, eventDir);
+    Trainer *TrainC2 = new Trainer(2, EventList, eventDir);
+    Trainer *TrainC3 = new Trainer(3, EventList, eventDir);
+
+
+
     try {
-        Trainer *TrainC0 = new Trainer(0, EventList, eventDir);
+
         TrainC0->MakeAvgSigmaImage(false);
-
-        Trainer *TrainC1 = new Trainer(1, EventList, eventDir);
         TrainC1->MakeAvgSigmaImage(false);
-
-        Trainer *TrainC2 = new Trainer(2, EventList, eventDir);
         TrainC2->MakeAvgSigmaImage(false);
-
-        Trainer *TrainC3 = new Trainer(3, EventList, eventDir);
         TrainC3->MakeAvgSigmaImage(false);
 
     } catch (...) {
