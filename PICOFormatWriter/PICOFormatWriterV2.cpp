@@ -44,7 +44,7 @@ void OutputWriter::writeHeader(void ){
     this->OutFile.open(this->abubOutFilename);
     this->OutFile<<"Output of AutoBub v3 - the automatic unified bubble finder code by Pitam, using OpenCV.\n";
     this->OutFile<<"run ev ibubimage TotalBub4CamImg camera frame0 hori vert GenesisW GenesisH dZdt dRdt\n";
-    this->OutFile<<"%12s %5d %d %d %d %d %d %d %.02f %.02f\n8\n\n\n";
+    this->OutFile<<"%12s %5d %d %d %d %d %.02f %.02f %d %d %.02f %.02f\n8\n\n\n";
     this->OutFile.close();
 }
 
@@ -112,6 +112,9 @@ OutputWriter::BubbleData::BubbleData(){};
 void OutputWriter::formEachBubbleOutput(int camera, int &ibubImageStart, int nBubTotal){
 
     this->_StreamOutput.clear();
+    this->_StreamOutput.precision(2);
+    this->_StreamOutput.setf(std::ios::fixed, std::ios::floatfield);
+
 
     BubbleData *workingData;
 
@@ -123,8 +126,9 @@ void OutputWriter::formEachBubbleOutput(int camera, int &ibubImageStart, int nBu
     //int event;
     //int frame0=50;
     //run ev ibubimage TotalBub4CamImg camera frame0 GenesisX GenesisY GenesisW GenesisH dZdt dRdt\n";
+
     if (workingData->StatusCode !=0) {
-        this->_StreamOutput<<this->run_number<<" "<<workingData->event<<"    "<<0.0<<" "<<0.0<<"    "<<camera<<" "<<workingData->StatusCode<<"    "<<0.0<<" "<<0.0<<" "<<0.0<<" "<<0.0;
+        this->_StreamOutput<<this->run_number<<" "<<workingData->event<<"    "<<0<<" "<<0<<"    "<<camera<<" "<<workingData->StatusCode<<"    "<<0.0<<" "<<0.0<<" "<<0<<" "<<0;
         this->_StreamOutput<<" "<<0.0<<" "<<0.0<<"\n";
     } else {
     /*Write all outputs here*/
@@ -143,7 +147,8 @@ void OutputWriter::formEachBubbleOutput(int camera, int &ibubImageStart, int nBu
             float dzdt = workingData->BubbleObjectData[i]->dZdT();
             float drdt = workingData->BubbleObjectData[i]->dRdT();
 
-            this->_StreamOutput<<x<<" "<<y<<" "<<width<<" "<<height<<" "<<dzdt<<" "<<drdt<<"\n";
+
+            this->_StreamOutput<<x<<" "<<y<<" "<<(int)width<<" "<<(int)height<<" "<<dzdt<<" "<<drdt<<"\n";
         }
 
         ibubImageStart += workingData->BubbleObjectData.size();
