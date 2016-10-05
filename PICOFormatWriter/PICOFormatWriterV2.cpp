@@ -164,7 +164,14 @@ void OutputWriter::formEachBubbleOutput(int camera, int &ibubImageStart, int nBu
 void OutputWriter::writeCameraOutput(void){
 
     int ibubImageStart = 1;
-    int nBubTotal = this->BubbleData0.BubbleObjectData.size()+this->BubbleData1.BubbleObjectData.size()+this->BubbleData2.BubbleObjectData.size()+this->BubbleData3.BubbleObjectData.size();
+
+    /*Calculate nbubtotal. This is not that trivial because all the errors shouldnt get counted*/
+    int nBub0 = this->BubbleData0.StatusCode!=0 ? 0 :  this->BubbleData0.BubbleObjectData.size();
+    int nBub1 = this->BubbleData1.StatusCode!=0 ? 0 :  this->BubbleData1.BubbleObjectData.size();
+    int nBub2 = this->BubbleData2.StatusCode!=0 ? 0 :  this->BubbleData2.BubbleObjectData.size();
+    int nBub3 = this->BubbleData3.StatusCode!=0 ? 0 :  this->BubbleData3.BubbleObjectData.size();
+
+    int nBubTotal = nBub0+nBub1+nBub2+nBub3;
 
     this->formEachBubbleOutput(0, ibubImageStart, nBubTotal);
     this->formEachBubbleOutput(1, ibubImageStart, nBubTotal);
