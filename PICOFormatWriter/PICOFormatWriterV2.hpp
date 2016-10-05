@@ -57,6 +57,7 @@ class OutputWriter{
 
         void formEachBubbleOutput(int, int&, int );
         void writeCameraOutput(void);
+        int CalculateNBubCamera(int );
 
 
 
