@@ -28,6 +28,8 @@ class Trainer{
         /*direct access to the trained data*/
         cv::Mat TrainedAvgImage;
         cv::Mat TrainedSigmaImage;
+        cv::Mat TrainedLBPAvg;
+        cv::Mat TrainedLBPSigma;
 
         bool isLBPApplied = false;
 
@@ -43,6 +45,7 @@ class Trainer{
 
         /*Compute the mean and std*/
         void MakeAvgSigmaImage(bool );
+        void CalculateMeanSigmaImageVector(std::vector<cv::Mat>&, cv::Mat& , cv::Mat&);
 
 
 };

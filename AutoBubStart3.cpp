@@ -172,7 +172,7 @@ int main(int argc, char** argv)
             //cout<<"Trigger Frame: "<<AnalyzerC0->MatTrigFrame<<"\n";
             if (AnalyzerC0->okToProceed)
             {
-                AnalyzerC0->LocalizeOMatic(out_dir);
+                AnalyzerC0->LocalizeOMatic(out_dir);  //uncomment for full run
                 PICO60Output->stageCameraOutput(AnalyzerC0->BubbleList,0, AnalyzerC0->MatTrigFrame, actualEventNumber);
             }
             else
@@ -201,7 +201,7 @@ int main(int argc, char** argv)
 
             if (AnalyzerC1->okToProceed)
             {
-                AnalyzerC1->LocalizeOMatic(out_dir);
+                AnalyzerC1->LocalizeOMatic(out_dir);  //uncomment for full run
                 PICO60Output->stageCameraOutput(AnalyzerC1->BubbleList,1, AnalyzerC1->MatTrigFrame, actualEventNumber);
             }
             else
@@ -260,7 +260,7 @@ int main(int argc, char** argv)
             //cout<<"Trigger Frame: "<<AnalyzerC3->MatTrigFrame<<"\n";
             if (AnalyzerC3->okToProceed)
             {
-                AnalyzerC3->LocalizeOMatic(out_dir);
+                AnalyzerC3->LocalizeOMatic(out_dir);  //uncomment for full run
                 PICO60Output->stageCameraOutput(AnalyzerC3->BubbleList,3, AnalyzerC3->MatTrigFrame, actualEventNumber);
             }
             else

@@ -112,7 +112,10 @@ void AnalyzerUnit::FindTriggerFrame(void ){
     cv::Mat comparisonFrame;
 
     /*Static variable to store the threshold entropy WHERE USED??*/
-    static float entropyThreshold = 0.0;
+    float entropyThreshold;
+    if(this->CameraNumber==2) entropyThreshold = 0.0009;
+    else entropyThreshold = 0.0003;
+
     /*Variable to store the current entropy in*/
     float singleEntropy;
 
@@ -158,10 +161,8 @@ void AnalyzerUnit::FindTriggerFrame(void ){
         }
         //std::cout<<"Frame Entropy: "<<singleEntropy<<std::endl;
 
-
-
         /*Nothing works better than manual entropy settings. :-(*/
-        if (singleEntropy > 0.0003 and i > this->minEvalFrameNumber) {
+        if (singleEntropy > entropyThreshold and i > this->minEvalFrameNumber) {
             this->TriggerFrameIdentificationStatus = 0;
             this->MatTrigFrame = i;
             break;
