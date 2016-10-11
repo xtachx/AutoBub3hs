@@ -94,75 +94,19 @@ void Trainer::ParseAndSortFramesInFolder(std::string searchPattern, std::string 
  * Function finds avg and std of all training frames
  */
 
+void Trainer::CalculateMeanSigmaImageVector(std::vector<cv::Mat>& ImagesArray, cv::Mat& meanImageProcess, cv::Mat& sigmaImageProcess){
 
-void Trainer::MakeAvgSigmaImage(bool PerformLBPOnImages=false)
-{
-
-    this->isLBPApplied = PerformLBPOnImages;
-    /*Declare memory to store all the images coming in*/
-    std::vector<cv::Mat> backgroundImagingArray, TestingForEntropyArray;
-
-    cv::Mat tempImagingProcess, tempImagingLBP, tempTestingEntropy;
-    float singleEntropyTest=0;
     int rows, cols;
 
-
-    printf("Camera %d training ... ",this->camera);
-    /*Store all the images*/
-    std::string ThisEventDir, thisEventLocation;
-
-
-    for (int i=0; i<this->EventList.size(); i++)
-    {
-        ThisEventDir = this->EventDir+EventList[i]+"/Images/";
-
-        std::string ImageFilePattern = "cam"+std::to_string(this->camera)+"_image";
-        this->ParseAndSortFramesInFolder(ImageFilePattern, ThisEventDir);
-
-        TestingForEntropyArray.clear();
-
-        /*The for block loads images 0 and 1 from each event*/
-        for (std::vector<int>::iterator it = TrainingSequence.begin(); it !=TrainingSequence.end(); it++)
-        {
-            thisEventLocation = ThisEventDir + this->CameraFrames[*it];
-            //std::cout<<"Frame: "<<thisEventLocation<<"\n";
-            tempImagingProcess = cv::imread(thisEventLocation, 0);
-            TestingForEntropyArray.push_back(tempImagingProcess);
-        }
-        /*Test entropy for the first 2 trained sets*/
-        tempTestingEntropy = TestingForEntropyArray[1]-TestingForEntropyArray[0];
-        singleEntropyTest = calculateEntropyFrame(tempTestingEntropy);
-        if (singleEntropyTest <= 0.0005) {
-            //printf ("Entropy: %f\n", singleEntropyTest);
-            //printf("Training on: %s\n", EventList[i].c_str());
-            advance_cursor();
-            for (cv::Mat image : TestingForEntropyArray) backgroundImagingArray.push_back(image);
-        }
-
-        //backgroundImagingArray
-        /*GC*/
-        this->CameraFrames.clear();
-    }
-
-
-
-
-
-
-//    std::string ty =  type2str( backgroundImagingArray[0].type() );
-//    printf("Matrix: %s %dx%d \n", ty.c_str(), backgroundImagingArray[0].cols, backgroundImagingArray[0].rows );
-
-    rows = backgroundImagingArray[0].rows;
-    cols = backgroundImagingArray[0].cols;
-
-    //printf ("Rows %d cols %d, TotalImageSize: %d", rows, cols, backgroundImagingArray.size());
+    rows = ImagesArray[0].rows;
+    cols = ImagesArray[0].cols;
 
 
     /*Declare new variables for making the analyzed matrix*/
-    std::vector<cv::Mat>::size_type numImagesToProcess = backgroundImagingArray.size();
+    std::vector<cv::Mat>::size_type numImagesToProcess = ImagesArray.size();
 
-    cv::Mat sigmaImageProcess = cv::Mat::zeros(rows, cols, CV_8U);
-    cv::Mat meanImageProcess = cv::Mat::zeros(rows, cols, CV_8U);
+    sigmaImageProcess = cv::Mat::zeros(rows, cols, CV_8U);
+    meanImageProcess = cv::Mat::zeros(rows, cols, CV_8U);
 
 
     std::vector<cv::Mat>::size_type processingFrame;
@@ -185,19 +129,17 @@ void Trainer::MakeAvgSigmaImage(bool PerformLBPOnImages=false)
             /*get the 1-D array of each layer*/
             for (processingFrame=0; processingFrame<numImagesToProcess; processingFrame++ )
             {
-                temp_pixVal = (float) backgroundImagingArray[processingFrame].at<uchar>(row, col);
+                temp_pixVal = (float) ImagesArray[processingFrame].at<uchar>(row, col);
 
                 /*online mean and variance algorithm*/
                 temp_delta = temp_pixVal - temp_mean;
                 temp_mean += temp_delta/(processingFrame+1);
                 temp_m2 += temp_delta*(temp_pixVal - temp_mean);
 
-                //printf(" -%d-", (int)backgroundImagingArray[processingFrame].at<uchar>(row, col));
             }
 
             temp_variance = temp_m2 / (numImagesToProcess - 1);
             temp_sigma = sqrt(temp_variance);
-            //printf("\n Mean: %f | Var %f | Sig %f \n", temp_mean, temp_variance, temp_sigma);
 
             /*Values in a CV_32F image must be between 0 and 1. Since the scale was 0-255 for pixels, we normalize it by dividing with 255*/
             sigmaImageProcess.at<uchar>(row, col) =  (int)temp_sigma;
@@ -216,15 +158,87 @@ void Trainer::MakeAvgSigmaImage(bool PerformLBPOnImages=false)
         }
     }
 
-    //sigmaImageProcess = sigmaImageProcess*100;
-    //cv::Mat sigmaImageWrite, meanImageWrite;
-    //sigmaImageProcess.convertTo(sigmaImageWrite, CV_8U, 255.0);
-    //meanImageProcess.convertTo(meanImageWrite, CV_8U, 255.0);
+    //AvgImg = meanImageProcess.clone();
+    //SigImg = sigmaImageProcess.clone();
 
-    this->TrainedAvgImage = meanImageProcess;
-    this->TrainedSigmaImage = sigmaImageProcess;
-    //cv::imwrite( "SigmaMap.png", sigmaImageWrite );
-    //cv::imwrite( "MeanMap.png", meanImageProcess );
+
+
+}
+
+
+
+
+void Trainer::MakeAvgSigmaImage(bool PerformLBPOnImages=false)
+{
+
+    this->isLBPApplied = PerformLBPOnImages;
+    /*Declare memory to store all the images coming in*/
+    std::vector<cv::Mat> backgroundImagingArray, backgroundLBPImgArray, TestingForEntropyArray;
+
+    cv::Mat tempImagingProcess, tempImagingLBP, tempTestingEntropy;
+    float singleEntropyTest=0;
+
+
+
+    printf("Camera %d training ... ",this->camera);
+    /*Store all the images*/
+    std::string ThisEventDir, thisEventLocation;
+
+
+    for (int i=0; i<this->EventList.size(); i++)
+    {
+        ThisEventDir = this->EventDir+EventList[i]+"/Images/";
+        std::string ImageFilePattern = "cam"+std::to_string(this->camera)+"_image";
+        this->ParseAndSortFramesInFolder(ImageFilePattern, ThisEventDir);
+
+        TestingForEntropyArray.clear();
+
+        /*The for block loads images 0 and 1 from each event*/
+        for (std::vector<int>::iterator it = TrainingSequence.begin(); it !=TrainingSequence.end(); it++)
+        {
+            thisEventLocation = ThisEventDir + this->CameraFrames[*it];
+            tempImagingProcess = cv::imread(thisEventLocation, 0);
+            TestingForEntropyArray.push_back(tempImagingProcess);
+        }
+
+
+        /*Test entropy for the first 2 trained sets*/
+        tempTestingEntropy = TestingForEntropyArray[1]-TestingForEntropyArray[0];
+        singleEntropyTest = calculateEntropyFrame(tempTestingEntropy);
+
+        /*If entropy results pass, construct the images and LBP versions*/
+        if (singleEntropyTest <= 0.0005) {
+            advance_cursor();
+
+            /*For all frames used for training*/
+            for (cv::Mat image : TestingForEntropyArray) {
+                backgroundImagingArray.push_back(image);
+
+                /*LBP versions required?*/
+                if (this->isLBPApplied) {
+                    tempImagingLBP = lbpImageSingleChan(image);
+                    backgroundLBPImgArray.push_back(tempImagingLBP);
+                }
+            }
+
+        }
+
+        /*GC*/
+        this->CameraFrames.clear();
+    }
+
+
+
+    /*Calculate mean and sigma of the raw images*/
+    advance_cursor();
+    this->CalculateMeanSigmaImageVector(backgroundImagingArray, this->TrainedAvgImage, this->TrainedSigmaImage);
+
+    /*Calculate mean and sigma of LBP*/
+    advance_cursor();
+    if (this->isLBPApplied) this->CalculateMeanSigmaImageVector(backgroundLBPImgArray, this->TrainedLBPAvg, this->TrainedLBPSigma);
+
+
+
 
     printf("complete.\n");
 

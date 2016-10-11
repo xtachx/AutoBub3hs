@@ -246,10 +246,166 @@ void L3Localizer::CalculateInitialBubbleParams(void )
 
     }
 
-    //debugShow(this->presentationFrame);
 
 }
-/*Takes care of the localization completely. Just like it says... Localize-O-Matic!*/
+
+
+
+void L3Localizer::CalculateInitialBubbleParamsCam2(void )
+{
+
+    /*Temporary holder for the presentationFrame*/
+    cv::Mat tempPresentation;
+    tempPresentation = this->presentationFrame.clone();
+
+
+
+    /*Construct the frame differences. Note: Due to retroreflector, the bubbles are darker!*/
+    cv::Mat NewFrameDiffTrig, overTheSigma, newFrameTrig;
+    NewFrameDiffTrig =  this->TrainedData->TrainedAvgImage-this->triggerFrame;
+
+    /*Blur the trained data sigma image to get a bigger coverage and subtract*/
+    cv::blur(this->TrainedData->TrainedSigmaImage, this->TrainedData->TrainedSigmaImage, cv::Size(3,3));
+    overTheSigma = NewFrameDiffTrig - 6*this->TrainedData->TrainedSigmaImage;
+    /*Enhance the difference*/
+    overTheSigma*=5;
+
+
+    /*Shadow removal using blurring and intensity*/
+    cv::Mat bubMinusShadow;
+    cv::blur(overTheSigma,overTheSigma, cv::Size(3,3));
+    cv::threshold(overTheSigma, bubMinusShadow, 100, 255, CV_THRESH_TOZERO|CV_THRESH_OTSU);
+
+
+
+
+    /*Get rid of pixel noise*/
+    cv::threshold(bubMinusShadow, bubMinusShadow, 10, 255, CV_THRESH_TOZERO);
+
+    /*Check if this is a trigger by the interface moving or not - Note: Works ONLY on cam 2's entropy settings*/
+    //showHistogramImage(bubMinusShadow);
+    float ImageDynamicRange = ImageDynamicRangeSum(bubMinusShadow,100,200);
+    if (ImageDynamicRange==0.0) return;
+
+
+    /*Use contour / canny edge detection to find contours of interesting objects*/
+    std::vector<std::vector<cv::Point> > contours;
+    cv::findContours(bubMinusShadow, contours, CV_RETR_EXTERNAL, CV_CHAIN_APPROX_TC89_L1);
+
+    /*Make two vectors to store the fitted rectanglse and ellipses*/
+    std::vector<cv::RotatedRect> minAreaRect( contours.size() );
+    std::vector<cv::Rect> minRect( contours.size() );
+
+    int BoxArea=0;
+    /*Generate the ellipses and rectangles for each contours*/
+    for( int i = 0; i < contours.size(); i++ ) {
+        minRect[i] = cv::boundingRect( contours[i]);
+        BoxArea = minRect[i].width*minRect[i].height;
+        if (BoxArea>10){
+            //std::cout<<" Bubble genesis              X: "<<minRect[i].x<<" Y: "<<minRect[i].y<<" W: "<<minRect[i].width<<" H: "<<minRect[i].height<<"\n";
+            cv::rectangle(this->presentationFrame, minRect[i], this->color_red,1,8,0);
+            this->bubbleRects.push_back(minRect[i]);
+
+            bubble* firstBubble = new bubble(minRect[i]);
+            this->BubbleList.push_back(firstBubble);
+        }
+
+    }
+
+    //debugShow(this->presentationFrame);
+
+
+}
+
+/*Post trigger frame for cam 2*/
+
+void L3Localizer::CalculatePostTriggerFrameParamsCam2(int postTrigFrameNumber )
+{
+
+    cv::Mat tempPresentation;
+    /*Declare memory / variables that will be needed */
+    this->PostTrigWorkingFrame = cv::imread(this->ImageDir + this->CameraFrames[this->MatTrigFrame+1+postTrigFrameNumber],0);
+    tempPresentation =  this->PostTrigWorkingFrame.clone();
+    cv::cvtColor(tempPresentation, tempPresentation, cv::COLOR_GRAY2BGR);
+
+
+    /*Construct the frame differences. Note: Due to retroreflector, the bubbles are darker!*/
+    cv::Mat NewFrameDiffTrig, overTheSigma, newFrameTrig;
+    NewFrameDiffTrig =  this->TrainedData->TrainedAvgImage-this->PostTrigWorkingFrame;
+
+    /*Blur the trained data sigma image to get a bigger coverage and subtract*/
+    cv::blur(this->TrainedData->TrainedSigmaImage, this->TrainedData->TrainedSigmaImage, cv::Size(3,3));
+    overTheSigma = NewFrameDiffTrig - 6*this->TrainedData->TrainedSigmaImage;
+    /*Enhance the difference*/
+    overTheSigma*=5;
+
+
+    /*Shadow removal using blurring and intensity*/
+    cv::Mat bubMinusShadow;
+    cv::blur(overTheSigma,overTheSigma, cv::Size(3,3));
+    cv::threshold(overTheSigma, bubMinusShadow, 100, 255, CV_THRESH_TOZERO|CV_THRESH_OTSU);
+
+
+
+
+    /*Get rid of pixel noise*/
+    cv::threshold(bubMinusShadow, bubMinusShadow, 10, 255, CV_THRESH_TOZERO);
+
+    /*Check if this is a trigger by the interface moving or not - Note: Works ONLY on cam 2's entropy settings*/
+    //showHistogramImage(bubMinusShadow);
+    float ImageDynamicRange = ImageDynamicRangeSum(bubMinusShadow,100,200);
+    if (ImageDynamicRange==0.0) return;
+
+
+    /*Use contour / canny edge detection to find contours of interesting objects*/
+    std::vector<std::vector<cv::Point> > contours;
+    cv::findContours(bubMinusShadow, contours, CV_RETR_EXTERNAL, CV_CHAIN_APPROX_TC89_L1);
+
+    /*Make two vectors to store the fitted rectanglse and ellipses*/
+    std::vector<cv::RotatedRect> minAreaRect( contours.size() );
+    std::vector<cv::Rect> minRect( contours.size() );
+    std::vector<cv::Rect> newPositions;
+
+    int BoxArea=0;
+    /*Generate the ellipses and rectangles for each contours*/
+    for( int i = 0; i < contours.size(); i++ ) {
+        minRect[i] = cv::boundingRect( contours[i]);
+        BoxArea = minRect[i].width*minRect[i].height;
+        if (BoxArea>10){
+            //bubble* firstBubble = new bubble(minRect[i]);
+            cv::rectangle(tempPresentation, minRect[i], this->color_red,1,8,0);
+            newPositions.push_back(minRect[i]);
+        }
+    }
+
+    /*UnLock the bubble descriptors*/
+    for (int a=0; a<this->BubbleList.size(); a++){
+        this->BubbleList[a]->lockThisIteration=false;
+    }
+
+    /*Match these with the global bubbles*/
+    for (int j=0; j<newPositions.size(); j++){
+        float _thisbubbleX=newPositions[j].x;
+        float _thisbubbleY=newPositions[j].y;
+        /*look through all the global bubbles for a position*/
+        for (int k=0; k<this->BubbleList.size(); k++){
+            float _eval_bubble_X=this->BubbleList[k]->last_x;
+            float _eval_bubble_Y=this->BubbleList[k]->last_y;
+
+            if ((_eval_bubble_X-_thisbubbleX<5) && (fabs(_eval_bubble_Y-_thisbubbleY)<4)){
+                    *this->BubbleList[k]<<newPositions[j];
+                    break;
+            }
+        }
+
+    }
+
+
+
+}
+
+
+/*For other cameras*/
 
 
 void L3Localizer::CalculatePostTriggerFrameParams(int postTrigFrameNumber){
@@ -352,28 +508,26 @@ void L3Localizer::LocalizeOMatic(std::string imageStorePath)
     if (!this->okToProceed) return;
     /*Assign the three useful frames*/
 
-    if (this->TrainedData->isLBPApplied){
+    if (this->CameraNumber==2) this->MatTrigFrame+=1;
 
-        cv::Mat triggerFrame, comparisonFrame;
 
-        triggerFrame = cv::imread(this->ImageDir + this->CameraFrames[this->MatTrigFrame],0);
-        comparisonFrame = cv::imread(this->ImageDir + this->CameraFrames[0],0);
+    this->triggerFrame = cv::imread(this->ImageDir + this->CameraFrames[this->MatTrigFrame+1],0);
+    this->presentationFrame = triggerFrame.clone();
+    cv::cvtColor(this->presentationFrame, this->presentationFrame, cv::COLOR_GRAY2BGR);
+    this->ComparisonFrame = cv::imread(this->ImageDir + this->CameraFrames[0],0);
 
-        this->triggerFrame = lbpImageSingleChan(triggerFrame);
-        this->presentationFrame = triggerFrame.clone();
-        this->ComparisonFrame = lbpImageSingleChan(comparisonFrame);
-
-    } else {
-        this->triggerFrame = cv::imread(this->ImageDir + this->CameraFrames[this->MatTrigFrame+1],0);
-        this->presentationFrame = triggerFrame.clone();
-        cv::cvtColor(this->presentationFrame, this->presentationFrame, cv::COLOR_GRAY2BGR);
-        this->ComparisonFrame = cv::imread(this->ImageDir + this->CameraFrames[0],0);
-    }
     /*Run the analyzer series*/
-    this->CalculateInitialBubbleParams();
-    this->CalculatePostTriggerFrameParams(1);
-    this->CalculatePostTriggerFrameParams(2);
-    this->CalculatePostTriggerFrameParams(3);
+    if (this->CameraNumber==2) {
+        this->CalculateInitialBubbleParamsCam2();
+        this->CalculatePostTriggerFrameParamsCam2(1);
+        this->CalculatePostTriggerFrameParamsCam2(2);
+        this->CalculatePostTriggerFrameParamsCam2(3);
+    } else {
+        this->CalculateInitialBubbleParams();
+        this->CalculatePostTriggerFrameParams(1);
+        this->CalculatePostTriggerFrameParams(2);
+        this->CalculatePostTriggerFrameParams(3);
+    }
     //this->printBubbleList();
     //this->numBubbleMultiplicity=0;
 

@@ -48,6 +48,7 @@ class L3Localizer: public AnalyzerUnit{
         cv::Mat presentationFrame, frameDiffTrig;
         cv::Mat ComparisonFrame, triggerFrame;
 
+
         cv::Mat PostTrigWorkingFrame;
 
 
@@ -70,7 +71,9 @@ class L3Localizer: public AnalyzerUnit{
         /*Public functions exposing the interface*/
         //void LocalizeBottomBubble(cv::Mat&, cv::Mat&, std::vector<cv::RotatedRect>& );
         void CalculateInitialBubbleParams(void );
+        void CalculateInitialBubbleParamsCam2(void );
         void CalculatePostTriggerFrameParams(int );
+        void CalculatePostTriggerFrameParamsCam2(int );
         void printBubbleList(void);
 
         /*Public variables exposed for direct manipulation*/

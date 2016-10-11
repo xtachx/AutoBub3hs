@@ -64,6 +64,41 @@ void showHistogramImage(cv::Mat& frame)
 
 }
 
+float ImageDynamicRangeSum(cv::Mat& frame, int LowerBand, int HigherBand){
+
+    /* Establish the number of bins */
+    int histSize = 256;
+
+    /* Set the ranges ( for colour intensities) ) */
+    float range[] = { 0, 256 } ;
+    const float* histRange = { range };
+
+    /*Extra Parameters*/
+    bool uniform = true;
+    bool accumulate = false;
+
+    /*Calculation of the histogram*/
+    cv::Mat frame_hist;
+    calcHist( &frame, 1, 0, cv::Mat(), frame_hist, 1, &histSize, &histRange, uniform, accumulate );
+
+    cv::Size s = frame_hist.size();
+    int rows = s.height;
+    int cols = s.width;
+
+    float DynamicRangeSum = 0;
+
+    for (int i=LowerBand; i<=HigherBand; i++){
+        //std::cout<<"Rows: "<<rows<<" Cols: "<<cols<<"\n";
+        DynamicRangeSum += frame_hist.at<float>(i);
+    }
+
+    //printf("Drange: %f\n", DynamicRangeSum);
+
+    return DynamicRangeSum;
+
+
+}
+
 /*Spinning cursors*/
 
 void advance_cursor() {
