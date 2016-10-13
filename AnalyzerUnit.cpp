@@ -11,6 +11,7 @@
 #include "ImageEntropyMethods/ImageEntropyMethods.hpp"
 #include "LBP/LBPUser.hpp"
 #include "AlgorithmTraining/Trainer.hpp"
+#include "common/UtilityFunctions.hpp"
 
 
 
@@ -104,9 +105,13 @@ void AnalyzerUnit::ParseAndSortFramesInFolder( void )
 
 void AnalyzerUnit::FindTriggerFrame(void ){
 
-//ImageEntropyLauncher(           workingFrame,             imageDir,     SortedFileList[i],                                        i,      imEntropyTrigger,     imStability, camera);
-//int ImageEntropyLauncher(cv::Mat& workingFrame, cv::Mat& comparisonFrame, std::string imageDir, std::string imageFile, std::string comparisonFile, std::vector<std::string>::size_type &seq, bool &isTriggered, bool& imStability, int camera)
-// ImageEntropyLauncher(workingFrame, cmpFrame, imageDir, SortedFileList[i], SortedFileList[0], i, imEntropyTrigger, imStability, camera);
+    /*First, check if the sequence of events is malformed*/
+    if (this->CameraFrames.size()<20){
+        this->okToProceed=false;
+        this->TriggerFrameIdentificationStatus = -9;
+        return;
+    }
+
 
     cv::Mat workingFrame, img_mask0, img_mask1;
     cv::Mat comparisonFrame;
@@ -120,8 +125,15 @@ void AnalyzerUnit::FindTriggerFrame(void ){
     float singleEntropy;
 
     /*The reference image does not change, it is the first frame*/
+
     std::string refImg = this->ImageDir + this->CameraFrames[0];
     //std::cout<<"Ref Image: "<<refImg<<"\n";
+    if(getFilesize(refImg)<1000000){
+        this->okToProceed=false;
+        this->TriggerFrameIdentificationStatus = -9;
+        return;
+    }
+
     comparisonFrame = cv::imread(refImg.c_str());
 
     /*Start by flagging that a bubble wasnt found, flag gets changed to 0 if all goes well*/
@@ -132,8 +144,14 @@ void AnalyzerUnit::FindTriggerFrame(void ){
 
         /*The name and load to memory evalImage*/
         std::string evalImg = this->ImageDir + this->CameraFrames[i];
-        workingFrame = cv::imread(evalImg.c_str());
 
+        /*Check if image is malformed. If yes, then stop*/
+        if(getFilesize(evalImg)<1000000){
+            this->okToProceed=false;
+            this->TriggerFrameIdentificationStatus = -9;
+            return;
+        }
+        workingFrame = cv::imread(evalImg.c_str());
         /*BackgroundSubtract*/
         cv::absdiff(workingFrame, comparisonFrame, img_mask0);
 
@@ -175,6 +193,7 @@ void AnalyzerUnit::FindTriggerFrame(void ){
         this->okToProceed=false;
         this->MatTrigFrame;
     }
+
 
 }
 

@@ -164,7 +164,6 @@ int main(int argc, char** argv)
          ********************************/
 
         /*Exception handling - per camera*/
-
         try
         {
             AnalyzerC0->ParseAndSortFramesInFolder();
@@ -173,7 +172,8 @@ int main(int argc, char** argv)
             if (AnalyzerC0->okToProceed)
             {
                 AnalyzerC0->LocalizeOMatic(out_dir);  //uncomment for full run
-                PICO60Output->stageCameraOutput(AnalyzerC0->BubbleList,0, AnalyzerC0->MatTrigFrame, actualEventNumber);
+                if (AnalyzerC0->okToProceed) PICO60Output->stageCameraOutput(AnalyzerC0->BubbleList,0, AnalyzerC0->MatTrigFrame, actualEventNumber);
+                else PICO60Output->stageCameraOutputError(0,-8, actualEventNumber);
             }
             else
             {
@@ -193,7 +193,6 @@ int main(int argc, char** argv)
         /* ***************************
          * ***** Camera 1 Operations ******
          ********************************/
-
         try
         {
             AnalyzerC1->ParseAndSortFramesInFolder();
@@ -202,7 +201,8 @@ int main(int argc, char** argv)
             if (AnalyzerC1->okToProceed)
             {
                 AnalyzerC1->LocalizeOMatic(out_dir);  //uncomment for full run
-                PICO60Output->stageCameraOutput(AnalyzerC1->BubbleList,1, AnalyzerC1->MatTrigFrame, actualEventNumber);
+                if (AnalyzerC1->okToProceed) PICO60Output->stageCameraOutput(AnalyzerC1->BubbleList,1, AnalyzerC1->MatTrigFrame, actualEventNumber);
+                else PICO60Output->stageCameraOutputError(0,-8, actualEventNumber);
             }
             else
             {
@@ -215,14 +215,12 @@ int main(int argc, char** argv)
         {
             PICO60Output->stageCameraOutputError(1,-6, actualEventNumber);
         }
-
         /*Fancy coursors!*/
         advance_cursor();
 
         /* ***************************
          * ***** Camera 2 Operations ******
          ********************************/
-
         try
         {
             AnalyzerC2->ParseAndSortFramesInFolder();
@@ -231,7 +229,8 @@ int main(int argc, char** argv)
             if (AnalyzerC2->okToProceed)
             {
                 AnalyzerC2->LocalizeOMatic(out_dir);
-                PICO60Output->stageCameraOutput(AnalyzerC2->BubbleList,2, AnalyzerC2->MatTrigFrame, actualEventNumber);
+                if (AnalyzerC2->okToProceed) PICO60Output->stageCameraOutput(AnalyzerC2->BubbleList,2, AnalyzerC2->MatTrigFrame, actualEventNumber);
+                else PICO60Output->stageCameraOutputError(0,-8, actualEventNumber);
             }
             else
             {
@@ -251,7 +250,6 @@ int main(int argc, char** argv)
         /* ***************************
          * ***** Camera 3 Operations ******
          ********************************/
-
         try
         {
 
@@ -261,7 +259,8 @@ int main(int argc, char** argv)
             if (AnalyzerC3->okToProceed)
             {
                 AnalyzerC3->LocalizeOMatic(out_dir);  //uncomment for full run
-                PICO60Output->stageCameraOutput(AnalyzerC3->BubbleList,3, AnalyzerC3->MatTrigFrame, actualEventNumber);
+                if (AnalyzerC3->okToProceed) PICO60Output->stageCameraOutput(AnalyzerC3->BubbleList,3, AnalyzerC3->MatTrigFrame, actualEventNumber);
+                else PICO60Output->stageCameraOutputError(0,-8, actualEventNumber);
             }
             else
             {
@@ -278,7 +277,6 @@ int main(int argc, char** argv)
         /*Fancy coursors!*/
         advance_cursor();
 
-
         /*Write and commit output after each iteration, so in the event of a crash, its not lost*/
         PICO60Output->writeCameraOutput();
         delete AnalyzerC0;
@@ -288,7 +286,6 @@ int main(int argc, char** argv)
     }
 
     printf("run complete.\n");
-
 
     /*GC*/
     delete TrainC0;

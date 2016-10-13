@@ -496,18 +496,29 @@ void L3Localizer::printBubbleList(void){
 
 void L3Localizer::LocalizeOMatic(std::string imageStorePath)
 {
-
     //debugShow(this->TrainedData->TrainedAvgImage);
     cv::Mat sigmaImageRaw = this->TrainedData->TrainedSigmaImage;
     //sigmaImageRaw *= 10;
     //debugShow(sigmaImageRaw);
+    /*Check for malformed events*/
 
+    if (this->CameraFrames.size()<=20) this->okToProceed=false;
+
+    for (int i=this->MatTrigFrame; i<=this->MatTrigFrame+6; i++){
+        if (getFilesize(this->ImageDir + this->CameraFrames[i]) < 1000000) {
+            this->okToProceed=false;
+            this->TriggerFrameIdentificationStatus = -10;
+            std::cout<<"Failed analyzing event at: "<<this->ImageDir<<this->CameraFrames[i]<<"\n";
+        }
+    }
+
+
+    /* ******************************** */
 
 
 
     if (!this->okToProceed) return;
     /*Assign the three useful frames*/
-
     if (this->CameraNumber==2) this->MatTrigFrame+=1;
 
 
@@ -531,12 +542,10 @@ void L3Localizer::LocalizeOMatic(std::string imageStorePath)
     //this->printBubbleList();
     //this->numBubbleMultiplicity=0;
 
-
     /*Analyze results*/
     //std::cout<<"Refined bubble multiplicity:  "<<this->numBubbleMultiplicity<<"\n";
 
     /*Store the finished image*/
     //cv::imwrite(imageStorePath+"/"+eventSeq+".jpg", BubbleFrame);
-
 
 }
