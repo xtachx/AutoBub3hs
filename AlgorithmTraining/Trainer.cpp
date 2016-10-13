@@ -189,6 +189,7 @@ void Trainer::MakeAvgSigmaImage(bool PerformLBPOnImages=false)
 
     for (int i=0; i<this->EventList.size(); i++)
     {
+        isThisAGoodEvent=true;
         ThisEventDir = this->EventDir+EventList[i]+"/Images/";
         std::string ImageFilePattern = "cam"+std::to_string(this->camera)+"_image";
         this->ParseAndSortFramesInFolder(ImageFilePattern, ThisEventDir);
@@ -199,14 +200,13 @@ void Trainer::MakeAvgSigmaImage(bool PerformLBPOnImages=false)
         for (std::vector<int>::iterator it = TrainingSequence.begin(); it !=TrainingSequence.end(); it++)
         {
             thisEventLocation = ThisEventDir + this->CameraFrames[*it];
-            if (getFilesize(thisEventLocation) > 1000000){
+            if (getFilesize(thisEventLocation) > 1000000 and isThisAGoodEvent){
                 tempImagingProcess = cv::imread(thisEventLocation, 0);
                 TestingForEntropyArray.push_back(tempImagingProcess);
                 isThisAGoodEvent = true;
             } else {
                 isThisAGoodEvent = false;
                 std::cout<<"Event "<<EventList[i]<<" is malformed. Skipping training on this event\n";
-                break;
             }
         }
 
