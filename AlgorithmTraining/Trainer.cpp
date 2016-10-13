@@ -175,8 +175,10 @@ void Trainer::MakeAvgSigmaImage(bool PerformLBPOnImages=false)
     /*Declare memory to store all the images coming in*/
     std::vector<cv::Mat> backgroundImagingArray, backgroundLBPImgArray, TestingForEntropyArray;
 
+
     cv::Mat tempImagingProcess, tempImagingLBP, tempTestingEntropy;
     float singleEntropyTest=0;
+    bool isThisAGoodEvent;
 
 
 
@@ -197,17 +199,28 @@ void Trainer::MakeAvgSigmaImage(bool PerformLBPOnImages=false)
         for (std::vector<int>::iterator it = TrainingSequence.begin(); it !=TrainingSequence.end(); it++)
         {
             thisEventLocation = ThisEventDir + this->CameraFrames[*it];
-            tempImagingProcess = cv::imread(thisEventLocation, 0);
-            TestingForEntropyArray.push_back(tempImagingProcess);
+            if (getFilesize(thisEventLocation) > 1000000){
+                tempImagingProcess = cv::imread(thisEventLocation, 0);
+                TestingForEntropyArray.push_back(tempImagingProcess);
+                isThisAGoodEvent = true;
+            } else {
+                isThisAGoodEvent = false;
+                std::cout<<"Event "<<EventList[i]<<" is malformed. Skipping training on this event\n";
+                break;
+            }
         }
 
 
         /*Test entropy for the first 2 trained sets*/
-        tempTestingEntropy = TestingForEntropyArray[1]-TestingForEntropyArray[0];
-        singleEntropyTest = calculateEntropyFrame(tempTestingEntropy);
+        if (isThisAGoodEvent){
+            tempTestingEntropy = TestingForEntropyArray[1]-TestingForEntropyArray[0];
+            singleEntropyTest = calculateEntropyFrame(tempTestingEntropy);
+        } else {
+            singleEntropyTest = 0.0000;
+        }
 
         /*If entropy results pass, construct the images and LBP versions*/
-        if (singleEntropyTest <= 0.0005) {
+        if (singleEntropyTest <= 0.0005 and isThisAGoodEvent) {
             advance_cursor();
 
             /*For all frames used for training*/
@@ -228,7 +241,10 @@ void Trainer::MakeAvgSigmaImage(bool PerformLBPOnImages=false)
     }
 
 
-
+    if (backgroundImagingArray.size()==0){
+        printf("failed\n.");
+        throw 7;
+    }
     /*Calculate mean and sigma of the raw images*/
     advance_cursor();
     this->CalculateMeanSigmaImageVector(backgroundImagingArray, this->TrainedAvgImage, this->TrainedSigmaImage);
