@@ -199,7 +199,7 @@ void Trainer::MakeAvgSigmaImage(bool PerformLBPOnImages=false)
 
         /*The for block loads images 0 and 1 from each event*/
 
-        if (this->CameraFrames.size() <20 ){
+        if (this->CameraFrames.size() >20 ){
             for (std::vector<int>::iterator it = TrainingSequence.begin(); it !=TrainingSequence.end(); it++){
                 thisEventLocation = ThisEventDir + this->CameraFrames[*it];
                 if (getFilesize(thisEventLocation) > 1000000){
@@ -212,6 +212,8 @@ void Trainer::MakeAvgSigmaImage(bool PerformLBPOnImages=false)
                     break;
                 }
             }
+        } else {
+            std::cout<<"Event "<<EventList[i]<<" is nonexistant ont he disk. Skipping training on this event\n";
         }
 
 
