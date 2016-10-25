@@ -246,6 +246,7 @@ void L3Localizer::CalculateInitialBubbleParams(void )
 
     }
 
+    //debugShow(this->presentationFrame);
 
 }
 
@@ -277,14 +278,15 @@ void L3Localizer::CalculateInitialBubbleParamsCam2(void )
     cv::threshold(overTheSigma, bubMinusShadow, 100, 255, CV_THRESH_TOZERO|CV_THRESH_OTSU);
 
 
-
+    //debugShow(bubMinusShadow);
 
     /*Get rid of pixel noise*/
     cv::threshold(bubMinusShadow, bubMinusShadow, 10, 255, CV_THRESH_TOZERO);
 
+    //debugShow(bubMinusShadow);
     /*Check if this is a trigger by the interface moving or not - Note: Works ONLY on cam 2's entropy settings*/
     //showHistogramImage(bubMinusShadow);
-    float ImageDynamicRange = ImageDynamicRangeSum(bubMinusShadow,100,200);
+    float ImageDynamicRange = ImageDynamicRangeSum(bubMinusShadow,60,200);
     if (ImageDynamicRange==0.0) return;
 
 
@@ -301,6 +303,7 @@ void L3Localizer::CalculateInitialBubbleParamsCam2(void )
     for( int i = 0; i < contours.size(); i++ ) {
         minRect[i] = cv::boundingRect( contours[i]);
         BoxArea = minRect[i].width*minRect[i].height;
+
         if (BoxArea>10){
             //std::cout<<" Bubble genesis              X: "<<minRect[i].x<<" Y: "<<minRect[i].y<<" W: "<<minRect[i].width<<" H: "<<minRect[i].height<<"\n";
             cv::rectangle(this->presentationFrame, minRect[i], this->color_red,1,8,0);

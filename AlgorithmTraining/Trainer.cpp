@@ -213,7 +213,7 @@ void Trainer::MakeAvgSigmaImage(bool PerformLBPOnImages=false)
                 }
             }
         } else {
-            std::cout<<"Event "<<EventList[i]<<" is nonexistant ont he disk. Skipping training on this event\n";
+            std::cout<<"Event "<<EventList[i]<<" is nonexistant on the disk. Skipping training on this event\n";
         }
 
 
