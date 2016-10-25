@@ -118,8 +118,9 @@ void AnalyzerUnit::FindTriggerFrame(void ){
 
     /*Static variable to store the threshold entropy WHERE USED??*/
     float entropyThreshold;
-    if(this->CameraNumber==2) entropyThreshold = 0.0009;
-    else entropyThreshold = 0.0003;
+    //if(this->CameraNumber==2) entropyThreshold = 0.0009;
+    //else entropyThreshold = 0.0003;
+    entropyThreshold = 0.0003;
 
     /*Variable to store the current entropy in*/
     float singleEntropy;
@@ -163,7 +164,7 @@ void AnalyzerUnit::FindTriggerFrame(void ){
          * Debug Point here
          * **************** */
         //debugShow(img_mask1);
-        //std::cout<<"Entropy of BkgSub image: "<<singleEntropy<<"\n";
+        //std::cout<<"Entropy of BkgSub "<<i+30<<" image: "<<singleEntropy<<"\n";
 
 
         /*Calculate entropy of ROI*/
