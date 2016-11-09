@@ -69,7 +69,18 @@ L3Localizer::L3Localizer(std::string EventID, std::string ImageDir, int CameraNu
 }
 
 
-L3Localizer::~L3Localizer() {}
+L3Localizer::~L3Localizer() {
+
+        std::cout<<"Releasing memory\n";
+        this->presentationFrame.release();
+        this->ComparisonFrame.release();
+        this->triggerFrame.release();
+
+        //this->PostTrigWorkingFrame.refcount=0;
+        this->PostTrigWorkingFrame.release();
+
+
+}
 
 
 
@@ -199,18 +210,11 @@ void L3Localizer::rem_unique(std::vector<cv::Rect>& L2SearchAreas, std::vector<c
 void L3Localizer::CalculateInitialBubbleParams(void )
 {
 
-    /*Declare memory / variables that will be needed */
-    //cv::Mat FrameAfterTrigger = cv::imread(this->ImageDir + this->CameraFrames[this->MatTrigFrame+1],0);
-
-
-    /*Temporary holder for the presentationFrame*/
-    cv::Mat tempPresentation;
-    tempPresentation = this->presentationFrame.clone();
 
 
 
     /*Construct the frame differences and LBPImage Frames*/
-    cv::Mat NewFrameDiffTrig, overTheSigma, LBPImageTrigBeforeBlur, LBPImageTrigAfterBlur;
+    cv::Mat NewFrameDiffTrig, overTheSigma;
     cv::absdiff(this->triggerFrame, this->TrainedData->TrainedAvgImage, NewFrameDiffTrig);
 
     overTheSigma = NewFrameDiffTrig - 6*this->TrainedData->TrainedSigmaImage;
@@ -246,6 +250,11 @@ void L3Localizer::CalculateInitialBubbleParams(void )
 
     }
 
+
+    //NewFrameDiffTrig.refcount=0;
+    //overTheSigma.refcount=0;
+    NewFrameDiffTrig.release();
+    overTheSigma.release();
     //debugShow(this->presentationFrame);
 
 }
@@ -256,13 +265,13 @@ void L3Localizer::CalculateInitialBubbleParamsCam2(void )
 {
 
     /*Temporary holder for the presentationFrame*/
-    cv::Mat tempPresentation;
-    tempPresentation = this->presentationFrame.clone();
+    //cv::Mat tempPresentation;
+    //tempPresentation = this->presentationFrame.clone();
 
 
 
     /*Construct the frame differences. Note: Due to retroreflector, the bubbles are darker!*/
-    cv::Mat NewFrameDiffTrig, overTheSigma, newFrameTrig;
+    cv::Mat NewFrameDiffTrig, overTheSigma;
     NewFrameDiffTrig =  this->TrainedData->TrainedAvgImage-this->triggerFrame;
 
     /*Blur the trained data sigma image to get a bigger coverage and subtract*/
@@ -315,6 +324,11 @@ void L3Localizer::CalculateInitialBubbleParamsCam2(void )
 
     }
 
+    //NewFrameDiffTrig.refcount=0;
+    //overTheSigma.refcount=0;
+    NewFrameDiffTrig.release();
+    overTheSigma.release();
+
     //debugShow(this->presentationFrame);
 
 
@@ -325,11 +339,12 @@ void L3Localizer::CalculateInitialBubbleParamsCam2(void )
 void L3Localizer::CalculatePostTriggerFrameParamsCam2(int postTrigFrameNumber )
 {
 
-    cv::Mat tempPresentation;
+    //cv::Mat tempPresentation;
     /*Declare memory / variables that will be needed */
+    this->PostTrigWorkingFrame = cv::Mat();
     this->PostTrigWorkingFrame = cv::imread(this->ImageDir + this->CameraFrames[this->MatTrigFrame+1+postTrigFrameNumber],0);
-    tempPresentation =  this->PostTrigWorkingFrame.clone();
-    cv::cvtColor(tempPresentation, tempPresentation, cv::COLOR_GRAY2BGR);
+    //tempPresentation =  this->PostTrigWorkingFrame.clone();
+    //cv::cvtColor(tempPresentation, tempPresentation, cv::COLOR_GRAY2BGR);
 
 
     /*Construct the frame differences. Note: Due to retroreflector, the bubbles are darker!*/
@@ -376,7 +391,7 @@ void L3Localizer::CalculatePostTriggerFrameParamsCam2(int postTrigFrameNumber )
         BoxArea = minRect[i].width*minRect[i].height;
         if (BoxArea>10){
             //bubble* firstBubble = new bubble(minRect[i]);
-            cv::rectangle(tempPresentation, minRect[i], this->color_red,1,8,0);
+            //cv::rectangle(tempPresentation, minRect[i], this->color_red,1,8,0);
             newPositions.push_back(minRect[i]);
         }
     }
@@ -404,6 +419,9 @@ void L3Localizer::CalculatePostTriggerFrameParamsCam2(int postTrigFrameNumber )
     }
 
 
+    //this->PostTrigWorkingFrame.refcount=0;
+    //this->PostTrigWorkingFrame.release();
+    //tempPresentation.release();
 
 }
 
@@ -413,12 +431,12 @@ void L3Localizer::CalculatePostTriggerFrameParamsCam2(int postTrigFrameNumber )
 
 void L3Localizer::CalculatePostTriggerFrameParams(int postTrigFrameNumber){
 
-    cv::Mat tempPresentation;
+    //cv::Mat tempPresentation;
 
     /*Load the post trig frame*/
     this->PostTrigWorkingFrame = cv::imread(this->ImageDir + this->CameraFrames[this->MatTrigFrame+1+postTrigFrameNumber],0);
-    tempPresentation =  this->PostTrigWorkingFrame.clone();
-    cv::cvtColor(tempPresentation, tempPresentation, cv::COLOR_GRAY2BGR);
+    //tempPresentation =  this->PostTrigWorkingFrame.clone();
+    //cv::cvtColor(tempPresentation, tempPresentation, cv::COLOR_GRAY2BGR);
 
 
 
@@ -454,7 +472,7 @@ void L3Localizer::CalculatePostTriggerFrameParams(int postTrigFrameNumber){
         BoxArea = minRect[i].width*minRect[i].height;
         if (BoxArea>10){
             //std::cout<<" Bubble progression step:"<<postTrigFrameNumber<<" | X: "<<minRect[i].x<<" Y: "<<minRect[i].y<<" W: "<<minRect[i].width<<" H: "<<minRect[i].height<<"\n";
-            cv::rectangle(tempPresentation, minRect[i], this->color_red,1,8,0);
+            //cv::rectangle(tempPresentation, minRect[i], this->color_red,1,8,0);
             newPositions.push_back(minRect[i]);
             //this->bubbleRects.push_back(minRect[i]);
         }
@@ -483,6 +501,9 @@ void L3Localizer::CalculatePostTriggerFrameParams(int postTrigFrameNumber){
         }
 
     }
+
+    //this->PostTrigWorkingFrame.refcount=0;
+    //this->PostTrigWorkingFrame.release();
 
     //debugShow(tempPresentation);
 }
@@ -527,7 +548,7 @@ void L3Localizer::LocalizeOMatic(std::string imageStorePath)
 
     this->triggerFrame = cv::imread(this->ImageDir + this->CameraFrames[this->MatTrigFrame+1],0);
     this->presentationFrame = triggerFrame.clone();
-    cv::cvtColor(this->presentationFrame, this->presentationFrame, cv::COLOR_GRAY2BGR);
+    //cv::cvtColor(this->presentationFrame, this->presentationFrame, cv::COLOR_GRAY2BGR);
     this->ComparisonFrame = cv::imread(this->ImageDir + this->CameraFrames[0],0);
 
     /*Run the analyzer series*/
@@ -542,6 +563,9 @@ void L3Localizer::LocalizeOMatic(std::string imageStorePath)
         this->CalculatePostTriggerFrameParams(2);
         this->CalculatePostTriggerFrameParams(3);
     }
+
+
+
     //this->printBubbleList();
     //this->numBubbleMultiplicity=0;
 

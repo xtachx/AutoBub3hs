@@ -2,6 +2,7 @@
 #include <string>
 #include <dirent.h>
 #include <iostream>
+#include <stdexcept>
 
 
 #include <opencv2/opencv.hpp>
@@ -214,6 +215,7 @@ void Trainer::MakeAvgSigmaImage(bool PerformLBPOnImages=false)
             }
         } else {
             std::cout<<"Event "<<EventList[i]<<" is nonexistant on the disk. Skipping training on this event\n";
+            isThisAGoodEvent = false;
         }
 
 
@@ -248,8 +250,8 @@ void Trainer::MakeAvgSigmaImage(bool PerformLBPOnImages=false)
 
 
     if (backgroundImagingArray.size()==0){
-        printf("failed\n.");
-        throw 7;
+        printf("Training image set has 0 frames. This means that the event is malformed.\n");
+        throw -7;
     }
     /*Calculate mean and sigma of the raw images*/
     advance_cursor();
