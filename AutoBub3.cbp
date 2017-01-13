@@ -87,6 +87,8 @@
 		<Unit filename="PICOFormatWriter/PICOFormatWriter.hpp" />
 		<Unit filename="PICOFormatWriter/PICOFormatWriterV2.cpp" />
 		<Unit filename="PICOFormatWriter/PICOFormatWriterV2.hpp" />
+		<Unit filename="PICOFormatWriter/PICOFormatWriterV3.cpp" />
+		<Unit filename="PICOFormatWriter/PICOFormatWriterV3.hpp" />
 		<Unit filename="ParseFolder/ParseFolder.cpp" />
 		<Unit filename="ParseFolder/ParseFolder.hpp" />
 		<Unit filename="README.md" />

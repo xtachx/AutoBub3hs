@@ -32,7 +32,7 @@
 
 #include "AnalyzerUnit.hpp"
 #include "AlgorithmTraining/Trainer.hpp"
-#include "PICOFormatWriter/PICOFormatWriterV2.hpp"
+#include "PICOFormatWriter/PICOFormatWriterV3.hpp"
 #include "bubble/bubble.hpp"
 #include "common/UtilityFunctions.hpp"
 
@@ -148,10 +148,10 @@ int main(int argc, char** argv)
         std::string imageDir=eventDir+EventList[evi]+"/Images/";
         //std::cout<<"Processing event: "<<EventList[evi]<<" / "<<EventList.size()<<"\n";
         printf("\rProcessing event: %s / %d  ... ", EventList[evi].c_str(), EventList.size()-1);
-        AnalyzerUnit *AnalyzerC0 = new L3Localizer(EventList[evi], imageDir, 0, false, &TrainC0); /*EventID, imageDir and camera number*/
-        AnalyzerUnit *AnalyzerC1 = new L3Localizer(EventList[evi], imageDir, 1, false, &TrainC1); /*EventID, imageDir and camera number*/
-        AnalyzerUnit *AnalyzerC2 = new L3Localizer(EventList[evi], imageDir, 2, false, &TrainC2); /*EventID, imageDir and camera number*/
-        AnalyzerUnit *AnalyzerC3 = new L3Localizer(EventList[evi], imageDir, 3, false, &TrainC3); /*EventID, imageDir and camera number*/
+        AnalyzerUnit *AnalyzerC0 = new L3Localizer(EventList[evi], imageDir, 0, true, &TrainC0); /*EventID, imageDir and camera number*/
+        AnalyzerUnit *AnalyzerC1 = new L3Localizer(EventList[evi], imageDir, 1, true, &TrainC1); /*EventID, imageDir and camera number*/
+        AnalyzerUnit *AnalyzerC2 = new L3Localizer(EventList[evi], imageDir, 2, true, &TrainC2); /*EventID, imageDir and camera number*/
+        AnalyzerUnit *AnalyzerC3 = new L3Localizer(EventList[evi], imageDir, 3, true, &TrainC3); /*EventID, imageDir and camera number*/
 
         /*We need the actual event number in case folders with events are missing*/
         int actualEventNumber = atoi(EventList[evi].c_str());

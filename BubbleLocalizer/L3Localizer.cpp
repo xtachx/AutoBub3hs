@@ -33,6 +33,7 @@
 #include "../AnalyzerUnit.hpp"
 #include "../AlgorithmTraining/Trainer.hpp"
 #include "../bubble/bubble.hpp"
+#include "../common/CommonParameters.h"
 
 
 
@@ -65,6 +66,7 @@ L3Localizer::L3Localizer(std::string EventID, std::string ImageDir, int CameraNu
 
     /*Info from fit*/
     numBubbleMultiplicity = 0;
+
 
 }
 
@@ -217,12 +219,23 @@ void L3Localizer::CalculateInitialBubbleParams(void )
     cv::Mat NewFrameDiffTrig, overTheSigma;
     cv::absdiff(this->triggerFrame, this->TrainedData->TrainedAvgImage, NewFrameDiffTrig);
 
+    /*Debug*/
+    if (!this->nonStopMode) cv::imwrite("DebugPeek/"+std::to_string(CameraNumber)+"_1_TrigTrainAbsDiff.png", NewFrameDiffTrig);
+
     overTheSigma = NewFrameDiffTrig - 6*this->TrainedData->TrainedSigmaImage;
+
+    /*Debug*/
+    if (!this->nonStopMode) cv::imwrite("DebugPeek/"+std::to_string(CameraNumber)+"_2_OvrThe6Sigma.png", overTheSigma);
+
 
     cv::blur(overTheSigma,overTheSigma, cv::Size(3,3));
 
     cv::threshold(overTheSigma, overTheSigma, 3, 255, CV_THRESH_TOZERO);
     cv::threshold(overTheSigma, overTheSigma, 0, 255, CV_THRESH_BINARY|CV_THRESH_OTSU);
+
+    /*Debug*/
+    if (!this->nonStopMode) cv::imwrite("DebugPeek/"+std::to_string(CameraNumber)+"_3_OtsuThresholded.png", overTheSigma);
+
 
 
 
@@ -249,6 +262,9 @@ void L3Localizer::CalculateInitialBubbleParams(void )
         }
 
     }
+
+    /*Debug*/
+    if (!this->nonStopMode) cv::imwrite("DebugPeek/"+std::to_string(CameraNumber)+"_4_BubbleDetected.png", this->presentationFrame);
 
 
     //NewFrameDiffTrig.refcount=0;
@@ -554,14 +570,20 @@ void L3Localizer::LocalizeOMatic(std::string imageStorePath)
     /*Run the analyzer series*/
     if (this->CameraNumber==2) {
         this->CalculateInitialBubbleParamsCam2();
-        this->CalculatePostTriggerFrameParamsCam2(1);
-        this->CalculatePostTriggerFrameParamsCam2(2);
-        this->CalculatePostTriggerFrameParamsCam2(3);
+
+        for (int k=1; k<=NumFramesBubbleTrack; k++)
+            this->CalculatePostTriggerFrameParamsCam2(k);
+
+        //this->CalculatePostTriggerFrameParamsCam2(2);
+        //this->CalculatePostTriggerFrameParamsCam2(3);
     } else {
         this->CalculateInitialBubbleParams();
-        this->CalculatePostTriggerFrameParams(1);
-        this->CalculatePostTriggerFrameParams(2);
-        this->CalculatePostTriggerFrameParams(3);
+
+        for (int k=1; k<=NumFramesBubbleTrack; k++)
+            this->CalculatePostTriggerFrameParams(k);
+
+        //this->CalculatePostTriggerFrameParams(2);
+        //this->CalculatePostTriggerFrameParams(3);
     }
 
 
