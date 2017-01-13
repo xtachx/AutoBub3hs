@@ -196,6 +196,7 @@ void Trainer::MakeAvgSigmaImage(bool PerformLBPOnImages=false)
 
 
 
+
         TestingForEntropyArray.clear();
 
         /*The for block loads images 0 and 1 from each event*/
@@ -205,6 +206,7 @@ void Trainer::MakeAvgSigmaImage(bool PerformLBPOnImages=false)
                 thisEventLocation = ThisEventDir + this->CameraFrames[*it];
                 if (getFilesize(thisEventLocation) > 1000000){
                     tempImagingProcess = cv::imread(thisEventLocation, 0);
+
                     TestingForEntropyArray.push_back(tempImagingProcess);
                     isThisAGoodEvent = true;
                 } else {
@@ -223,6 +225,7 @@ void Trainer::MakeAvgSigmaImage(bool PerformLBPOnImages=false)
         if (isThisAGoodEvent){
             tempTestingEntropy = TestingForEntropyArray[1]-TestingForEntropyArray[0];
             singleEntropyTest = calculateEntropyFrame(tempTestingEntropy);
+            //std::cout<<ThisEventDir<<ImageFilePattern<<" "<<singleEntropyTest<<"\n";
         } else {
             singleEntropyTest = 0.0000;
         }

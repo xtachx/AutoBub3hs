@@ -49,7 +49,7 @@ set(SOURCE
    ${CMAKE_CURRENT_SOURCE_DIR}/BubbleLocalizer/L3Localizer.cpp
    ${CMAKE_CURRENT_SOURCE_DIR}/AlgorithmTraining/Trainer.cpp
    ${CMAKE_CURRENT_SOURCE_DIR}/AnalyzerUnit.cpp
-   ${CMAKE_CURRENT_SOURCE_DIR}/PICOFormatWriter/PICOFormatWriterV2.cpp
+   ${CMAKE_CURRENT_SOURCE_DIR}/PICOFormatWriter/PICOFormatWriterV3.cpp
    ${CMAKE_CURRENT_SOURCE_DIR}/bubble/bubble.cpp
 )
 set(HEADERS
@@ -57,7 +57,7 @@ set(HEADERS
    ${CMAKE_CURRENT_SOURCE_DIR}/BubbleLocalizer/L3Localizer.hpp
    ${CMAKE_CURRENT_SOURCE_DIR}/AlgorithmTraining/Trainer.hpp
    ${CMAKE_CURRENT_SOURCE_DIR}/AnalyzerUnit.hpp
-   ${CMAKE_CURRENT_SOURCE_DIR}/PICOFormatWriter/PICOFormatWriterV2.hpp
+   ${CMAKE_CURRENT_SOURCE_DIR}/PICOFormatWriter/PICOFormatWriterV3.hpp
    ${CMAKE_CURRENT_SOURCE_DIR}/bubble/bubble.hpp
 )
 

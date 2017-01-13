@@ -26,8 +26,6 @@ class bubble{
 
     private:
 
-        /* cvRect describing the origin */
-        std::vector<cv::Rect> KnownDescriptors;
 
 
         /*Temp storages*/
@@ -40,6 +38,8 @@ class bubble{
         bubble(cv::Rect );
         ~bubble();
 
+        /* cvRect describing the origin */
+        std::vector<cv::Rect> KnownDescriptors;
 
         float last_x;
         float last_y;
