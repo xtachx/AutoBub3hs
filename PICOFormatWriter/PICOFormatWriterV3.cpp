@@ -144,7 +144,7 @@ void OutputWriter::formEachBubbleOutput(int camera, int &ibubImageStart, int nBu
 
     if (workingData->StatusCode !=0) {
         this->_StreamOutput<<this->run_number<<" "<<workingData->event<<"    "<<0<<" "<<0<<"    "<<camera<<" "<<workingData->StatusCode<<"    "<<0.0<<" "<<0.0<<" "<<0<<" "<<0;
-        this->_StreamOutput<<" "<<0.0<<" "<<0.0;
+        this->_StreamOutput<<" "<<0.0<<" "<<0.0<<" ";
 
         /*Tracking data*/
         for (int j=1; j<=NumFramesBubbleTrack; j++)
