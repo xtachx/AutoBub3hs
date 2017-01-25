@@ -96,6 +96,7 @@
 		<Unit filename="bubble/bubble.cpp" />
 		<Unit filename="bubble/bubble.hpp" />
 		<Unit filename="common/CommonDatatypes.h" />
+		<Unit filename="common/CommonParameters.h" />
 		<Unit filename="common/UtilityFunctions.cpp" />
 		<Unit filename="common/UtilityFunctions.hpp" />
 		<Unit filename="testbed/CMakeLists.txt" />
