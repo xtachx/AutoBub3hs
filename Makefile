@@ -111,19 +111,6 @@ depend:
 .PHONY : depend
 
 #=============================================================================
-# Target rules for targets named lbpuser
-
-# Build rule for target.
-lbpuser: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 lbpuser
-.PHONY : lbpuser
-
-# fast build rule for target.
-lbpuser/fast:
-	$(MAKE) -f CMakeFiles/lbpuser.dir/build.make CMakeFiles/lbpuser.dir/build
-.PHONY : lbpuser/fast
-
-#=============================================================================
 # Target rules for targets named AbubEntropySubsystem
 
 # Build rule for target.
@@ -150,17 +137,30 @@ AbubUtility/fast:
 .PHONY : AbubUtility/fast
 
 #=============================================================================
-# Target rules for targets named abub3
+# Target rules for targets named lbpuser
 
 # Build rule for target.
-abub3: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 abub3
-.PHONY : abub3
+lbpuser: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 lbpuser
+.PHONY : lbpuser
 
 # fast build rule for target.
-abub3/fast:
-	$(MAKE) -f CMakeFiles/abub3.dir/build.make CMakeFiles/abub3.dir/build
-.PHONY : abub3/fast
+lbpuser/fast:
+	$(MAKE) -f CMakeFiles/lbpuser.dir/build.make CMakeFiles/lbpuser.dir/build
+.PHONY : lbpuser/fast
+
+#=============================================================================
+# Target rules for targets named abub3hs
+
+# Build rule for target.
+abub3hs: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 abub3hs
+.PHONY : abub3hs
+
+# fast build rule for target.
+abub3hs/fast:
+	$(MAKE) -f CMakeFiles/abub3hs.dir/build.make CMakeFiles/abub3hs.dir/build
+.PHONY : abub3hs/fast
 
 AutoBubStart3.o: AutoBubStart3.cpp.o
 
@@ -168,7 +168,7 @@ AutoBubStart3.o: AutoBubStart3.cpp.o
 
 # target to build an object file
 AutoBubStart3.cpp.o:
-	$(MAKE) -f CMakeFiles/abub3.dir/build.make CMakeFiles/abub3.dir/AutoBubStart3.cpp.o
+	$(MAKE) -f CMakeFiles/abub3hs.dir/build.make CMakeFiles/abub3hs.dir/AutoBubStart3.cpp.o
 .PHONY : AutoBubStart3.cpp.o
 
 AutoBubStart3.i: AutoBubStart3.cpp.i
@@ -177,7 +177,7 @@ AutoBubStart3.i: AutoBubStart3.cpp.i
 
 # target to preprocess a source file
 AutoBubStart3.cpp.i:
-	$(MAKE) -f CMakeFiles/abub3.dir/build.make CMakeFiles/abub3.dir/AutoBubStart3.cpp.i
+	$(MAKE) -f CMakeFiles/abub3hs.dir/build.make CMakeFiles/abub3hs.dir/AutoBubStart3.cpp.i
 .PHONY : AutoBubStart3.cpp.i
 
 AutoBubStart3.s: AutoBubStart3.cpp.s
@@ -186,7 +186,7 @@ AutoBubStart3.s: AutoBubStart3.cpp.s
 
 # target to generate assembly for a file
 AutoBubStart3.cpp.s:
-	$(MAKE) -f CMakeFiles/abub3.dir/build.make CMakeFiles/abub3.dir/AutoBubStart3.cpp.s
+	$(MAKE) -f CMakeFiles/abub3hs.dir/build.make CMakeFiles/abub3hs.dir/AutoBubStart3.cpp.s
 .PHONY : AutoBubStart3.cpp.s
 
 ImageEntropyMethods/ImageEntropyMethods.o: ImageEntropyMethods/ImageEntropyMethods.cpp.o
@@ -331,11 +331,11 @@ help:
 	@echo "... clean"
 	@echo "... depend"
 	@echo "... edit_cache"
-	@echo "... rebuild_cache"
-	@echo "... lbpuser"
 	@echo "... AbubEntropySubsystem"
 	@echo "... AbubUtility"
-	@echo "... abub3"
+	@echo "... rebuild_cache"
+	@echo "... lbpuser"
+	@echo "... abub3hs"
 	@echo "... AutoBubStart3.o"
 	@echo "... AutoBubStart3.i"
 	@echo "... AutoBubStart3.s"

@@ -63,7 +63,7 @@ set(HEADERS
 
 
 
-add_executable( abub3 AutoBubStart3.cpp )
-target_link_libraries( abub3 ${OpenCV_LIBS} ${SOURCE} ${HEADERS} lbpuser AbubEntropySubsystem AbubUtility)
+add_executable( abub3hs AutoBubStart3.cpp )
+target_link_libraries( abub3hs ${OpenCV_LIBS} ${SOURCE} ${HEADERS} lbpuser AbubEntropySubsystem AbubUtility)
 #target_link_libraries( abub ${OpenCV_LIBS} ${SOURCE} ${HEADERS} )
 

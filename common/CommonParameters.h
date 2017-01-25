@@ -2,9 +2,9 @@
 #define CommonParams_HPP_INCLUDED
 
 
-#define NumFramesBubbleTrack 3
+#define NumFramesBubbleTrack 10
 
 
-/*Version used for PICO-60 30L-16 analysis*/
+/*Version used for PICO-60 30L-16 high-speed*/
 
 #endif
