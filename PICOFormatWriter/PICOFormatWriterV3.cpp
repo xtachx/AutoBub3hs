@@ -23,7 +23,7 @@ OutputWriter::OutputWriter(std::string OutDir, std::string run_number)
     this->OutputDir = OutDir;
     this->run_number = run_number;
 
-    this->abubOutFilename = this->OutputDir+"abub3_"+this->run_number+".txt";
+    this->abubOutFilename = this->OutputDir+"abub3hs_"+this->run_number+".txt";
     //this->OutFile.open(this->abubOutFilename);
 
 }
@@ -44,10 +44,10 @@ void OutputWriter::writeHeader(void ){
 
     this->OutFile.open(this->abubOutFilename);
     this->OutFile<<"Output of AutoBub v3 - the automatic unified bubble finder code by Pitam, using OpenCV.\n";
-    this->OutFile<<"run ev ibubimage TotalBub4CamImg camera frame0 hori vert GenesisW GenesisH dZdt dRdt ";
-        this->OutFile<<"TrkFrame("<<NumFramesBubbleTrack<<") TrkHori("<<NumFramesBubbleTrack<<") TrkVert("<<NumFramesBubbleTrack<<") ";
-        this->OutFile<<"TrkBubW("<<NumFramesBubbleTrack<<") TrkBubH("<<NumFramesBubbleTrack<<")\n";
-    this->OutFile<<"%12s %5d %d %d %d %d %.02f %.02f %d %d %.02f %.02f ";
+    this->OutFile<<"run  ev  ibubimage  TotalBub4CamImg  camera  frame0  hori  vert  GenesisW  GenesisH  dZdt  dRdt  ";
+        this->OutFile<<"TrkFrame("<<NumFramesBubbleTrack<<")  TrkHori("<<NumFramesBubbleTrack<<")  TrkVert("<<NumFramesBubbleTrack<<")  ";
+        this->OutFile<<"TrkBubW("<<NumFramesBubbleTrack<<")  TrkBubH("<<NumFramesBubbleTrack<<")  TrkBubRadius("<<NumFramesBubbleTrack<<")  FakeValue\n";
+    this->OutFile<<"%12s  %5d  %d  %d  %d  %d  %.02f  %.02f  %d  %d  %.02f  %.02f  ";
 
         /*Tracking data*/
         for (int j=1; j<=NumFramesBubbleTrack; j++)
@@ -67,7 +67,11 @@ void OutputWriter::writeHeader(void ){
         for (int j=1; j<=NumFramesBubbleTrack; j++)
             this->OutFile<<"%.02f "<<" ";
 
+        /*Radius*/
+        for (int j=1; j<=NumFramesBubbleTrack; j++)
+            this->OutFile<<"%.02f "<<" ";
 
+    this->OutFile<<"%d";
     this->OutFile<<"\n8\n\n\n";
     this->OutFile.close();
 }
@@ -92,7 +96,6 @@ void OutputWriter::stageCameraOutput(std::vector<bubble*> BubbleRectIn, int came
     else if (camera==1) thisBubbleData = &this->BubbleData1;
     else if (camera==2) thisBubbleData = &this->BubbleData2;
     else if (camera==3) thisBubbleData = &this->BubbleData3;
-
 
     thisBubbleData->BubbleObjectData = BubbleRectIn;
     thisBubbleData->StatusCode = tempStatus;
@@ -147,34 +150,40 @@ void OutputWriter::formEachBubbleOutput(int camera, int &ibubImageStart, int nBu
     else if (camera==2) workingData = &this->BubbleData2;
     else if (camera==3) workingData = &this->BubbleData3;
 
+
     //int event;
     //int frame0=50;
     //run ev ibubimage TotalBub4CamImg camera frame0 GenesisX GenesisY GenesisW GenesisH dZdt dRdt\n";
 
     if (workingData->StatusCode !=0) {
-        this->_StreamOutput<<this->run_number<<" "<<workingData->event<<"    "<<0<<" "<<0<<"    "<<camera<<" "<<workingData->StatusCode<<"    "<<0.0<<" "<<0.0<<" "<<0<<" "<<0;
-        this->_StreamOutput<<" "<<0.0<<" "<<0.0<<" ";
+        this->_StreamOutput<<this->run_number<<"  "<<workingData->event<<"  "<<0<<"  "<<0<<"  "<<camera<<"  "<<workingData->StatusCode<<"  "<<0.0<<"  "<<0.0<<"  "<<0<<"  "<<0;
+        this->_StreamOutput<<"  "<<0.0<<"  "<<0.0<<"  ";
 
         /*Tracking data*/
         for (int j=1; j<=NumFramesBubbleTrack; j++)
-            this->_StreamOutput<<0<<" ";
+            this->_StreamOutput<<0<<"  ";
 
         /*Position*/
         for (int j=1; j<=NumFramesBubbleTrack; j++)
-            this->_StreamOutput<<0.0<<" ";
+            this->_StreamOutput<<0.0<<"  ";
 
         for (int j=1; j<=NumFramesBubbleTrack; j++)
-            this->_StreamOutput<<0.0<<" ";
+            this->_StreamOutput<<0.0<<"  ";
 
         /*Bubble Size*/
         for (int j=1; j<=NumFramesBubbleTrack; j++)
-            this->_StreamOutput<<0.0<<" ";
+            this->_StreamOutput<<0.0<<"  ";
 
         for (int j=1; j<=NumFramesBubbleTrack; j++)
-            this->_StreamOutput<<0.0<<" ";
+            this->_StreamOutput<<0.0<<"  ";
+
+        /*Radius*/
+        for (int j=1; j<=NumFramesBubbleTrack; j++)
+            this->_StreamOutput<<0.0<<"  ";
 
 
-        this->_StreamOutput<<"\n";
+
+        this->_StreamOutput<<"1  \n";
 
 
 
@@ -182,83 +191,99 @@ void OutputWriter::formEachBubbleOutput(int camera, int &ibubImageStart, int nBu
     /*Write all outputs here*/
         for (int i=0; i<workingData->BubbleObjectData.size(); i++){
             //run ev iBubImage TotalBub4CamImage camera
-            this->_StreamOutput<<this->run_number<<" "<<workingData->event<<"    "<<ibubImageStart+i<<" "<<nBubTotal<<"    "<<camera<<" ";
+            this->_StreamOutput<<this->run_number<<"  "<<workingData->event<<"  "<<ibubImageStart+i<<"  "<<nBubTotal<<"  "<<camera<<"  ";
             //frame0
-            this->_StreamOutput<<workingData->frame0+30<<"    ";
+            this->_StreamOutput<<workingData->frame0+30<<"  ";
             //hori vert smajdiam smindiam
+
+
             float width=workingData->BubbleObjectData[i]->GenesisPosition.width;
             float height=workingData->BubbleObjectData[i]->GenesisPosition.height;
-            float x = (float)workingData->BubbleObjectData[i]->GenesisPosition.x+width/2.0;
-            float y = (float)workingData->BubbleObjectData[i]->GenesisPosition.y+height/2.0;
 
+
+            float x = (float)workingData->BubbleObjectData[i]->GenesisPositionCentroid.x; //+width/2.0;
+            float y = (float)workingData->BubbleObjectData[i]->GenesisPositionCentroid.y;// +height/2.0;
 
             float dzdt = workingData->BubbleObjectData[i]->dZdT();
             float drdt = workingData->BubbleObjectData[i]->dRdT();
 
             int numPointsTracked =  workingData->BubbleObjectData[i]->KnownDescriptors.size()-1;
+
+
+
             int numPointsExcess = NumFramesBubbleTrack > numPointsTracked ? NumFramesBubbleTrack-numPointsTracked : 0;
 
 
-            this->_StreamOutput<<x<<" "<<y<<" "<<(int)width<<" "<<(int)height<<" "<<dzdt<<" "<<drdt<<" ";
+
+            this->_StreamOutput<<x<<"  "<<y<<"  "<<(int)width<<"  "<<(int)height<<"  "<<dzdt<<"  "<<drdt<<"  ";
 
             /*Tracking data*/
             if (numPointsExcess <= 0 ){
                 for (int j=1; j<=numPointsTracked; j++)
-                    this->_StreamOutput<<workingData->frame0+30+j<<" ";
+                    this->_StreamOutput<<workingData->frame0+30+j<<"  ";
 
                 /*Tracking*/
                 for (int j=1; j<=numPointsTracked; j++)
-                    this->_StreamOutput<<(float)workingData->BubbleObjectData[i]->KnownDescriptors[j].x<<" ";
+                    this->_StreamOutput<<workingData->BubbleObjectData[i]->KnownDescriptors[j].MassCentres.x<<"  ";
 
                 for (int j=1; j<=numPointsTracked; j++)
-                    this->_StreamOutput<<(float)workingData->BubbleObjectData[i]->KnownDescriptors[j].y<<" ";
+                    this->_StreamOutput<<workingData->BubbleObjectData[i]->KnownDescriptors[j].MassCentres.y<<"  ";
 
 
                 /*Bubble size*/
                 for (int j=1; j<=numPointsTracked; j++)
-                    this->_StreamOutput<<(float)workingData->BubbleObjectData[i]->KnownDescriptors[j].width<<" ";
+                    this->_StreamOutput<<workingData->BubbleObjectData[i]->KnownDescriptors[j].newPosition.width<<"  ";
 
                 for (int j=1; j<=numPointsTracked; j++)
-                    this->_StreamOutput<<(float)workingData->BubbleObjectData[i]->KnownDescriptors[j].height<<" ";
+                    this->_StreamOutput<<workingData->BubbleObjectData[i]->KnownDescriptors[j].newPosition.height<<"  ";
+
+                /*Radius*/
+                for (int j=1; j<=numPointsTracked; j++)
+                    this->_StreamOutput<<workingData->BubbleObjectData[i]->KnownDescriptors[j].ContRadius<<"  ";
 
 
 
             } else if (numPointsExcess > 0 ){
 
                 for (int j=1; j<=numPointsTracked; j++)
-                    this->_StreamOutput<<workingData->frame0+30+j<<" ";
+                    this->_StreamOutput<<workingData->frame0+30+j<<"  ";
                 for (int j=0; j<numPointsExcess; j++)
-                    this->_StreamOutput<<workingData->frame0+30+numPointsTracked+j<<" ";
+                    this->_StreamOutput<<workingData->frame0+30+numPointsTracked+j<<"  ";
 
                 /*Tracking*/
 
                 for (int j=1; j<=numPointsTracked; j++)
-                    this->_StreamOutput<<(float)workingData->BubbleObjectData[i]->KnownDescriptors[j].x<<" ";
+                    this->_StreamOutput<<workingData->BubbleObjectData[i]->KnownDescriptors[j].MassCentres.x<<"  ";
                 for (int j=0; j<numPointsExcess; j++)
-                    this->_StreamOutput<<-1<<" ";
+                    this->_StreamOutput<<-1<<"  ";
 
                 for (int j=1; j<=numPointsTracked; j++)
-                    this->_StreamOutput<<(float)workingData->BubbleObjectData[i]->KnownDescriptors[j].y<<" ";
+                    this->_StreamOutput<<workingData->BubbleObjectData[i]->KnownDescriptors[j].MassCentres.y<<"  ";
                 for (int j=0; j<numPointsExcess; j++)
-                    this->_StreamOutput<<-1<<" ";
+                    this->_StreamOutput<<-1<<"  ";
 
                 /*Bubble size*/
 
                 for (int j=1; j<=numPointsTracked; j++)
-                    this->_StreamOutput<<(float)workingData->BubbleObjectData[i]->KnownDescriptors[j].width<<" ";
+                    this->_StreamOutput<<workingData->BubbleObjectData[i]->KnownDescriptors[j].newPosition.width<<"  ";
                 for (int j=0; j<numPointsExcess; j++)
-                    this->_StreamOutput<<-1<<" ";
+                    this->_StreamOutput<<-1<<"  ";
 
                 for (int j=1; j<=numPointsTracked; j++)
-                    this->_StreamOutput<<(float)workingData->BubbleObjectData[i]->KnownDescriptors[j].height<<" ";
+                    this->_StreamOutput<<workingData->BubbleObjectData[i]->KnownDescriptors[j].newPosition.height<<"  ";
                 for (int j=0; j<numPointsExcess; j++)
-                    this->_StreamOutput<<-1<<" ";
+                    this->_StreamOutput<<-1<<"  ";
 
+                /*Radius*/
+                for (int j=1; j<=numPointsTracked; j++)
+                    this->_StreamOutput<<workingData->BubbleObjectData[i]->KnownDescriptors[j].ContRadius<<"  ";
+                for (int j=0; j<numPointsExcess; j++)
+                    this->_StreamOutput<<-1<<"  ";
 
 
             }
 
-            this->_StreamOutput<<"\n";
+            this->_StreamOutput<<"1  \n";
 
         }
 
@@ -283,6 +308,7 @@ void OutputWriter::writeCameraOutput(void){
     int nBub3 = this->BubbleData3.StatusCode!=0 ? 0 :  this->BubbleData3.BubbleObjectData.size();
 
     int nBubTotal = nBub0+nBub1+nBub2+nBub3;
+
 
     this->formEachBubbleOutput(0, ibubImageStart, nBubTotal);
     this->formEachBubbleOutput(1, ibubImageStart, nBubTotal);

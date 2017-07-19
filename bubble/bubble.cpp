@@ -31,15 +31,16 @@
  * ******************************************************************************/
 
 
-bubble::bubble(cv::Rect bubbleGenesisRect){
+bubble::bubble(BubbleImageFrame bubbleGenesisStructure){
 
     /*The first bubble in inserted */
-    this->KnownDescriptors.push_back(bubbleGenesisRect);
+    this->KnownDescriptors.push_back(bubbleGenesisStructure);
 
-    this->last_x=bubbleGenesisRect.x;
-    this->last_y=bubbleGenesisRect.y;
+    this->last_x=bubbleGenesisStructure.MassCentres.x;
+    this->last_y=bubbleGenesisStructure.MassCentres.y;
+    this->GenesisPositionCentroid = bubbleGenesisStructure.MassCentres;
 
-    this->GenesisPosition = bubbleGenesisRect;
+    this->GenesisPosition = bubbleGenesisStructure.newPosition;
 
     //printf("Checkpoint 1\n");
     this->lockThisIteration = true;
@@ -49,19 +50,20 @@ bubble::bubble(cv::Rect bubbleGenesisRect){
 
 bubble::~bubble() {}
 
-void bubble::operator<<(cv::Rect newPosition){
+
+void bubble::operator<<(BubbleImageFrame newPosImgFrameStructure){
 
     /*Maybe check if the position is viable here  */
 
-
+    //std::cout<<"Bubble added with RR cen X"<<newPosImgFrameStructure.newPosition.x<<" y "<<newPosImgFrameStructure.newPosition.y<<"\n";
 
     if (!this->lockThisIteration){
 
-        this->KnownDescriptors.push_back(newPosition);
-        this->dz.push_back(this->last_x-newPosition.x);
+        this->KnownDescriptors.push_back(newPosImgFrameStructure);
+        this->dz.push_back(this->last_x-newPosImgFrameStructure.newPosition.x);
 
-        this->last_x=newPosition.x;
-        this->last_y=newPosition.y;
+        this->last_x=newPosImgFrameStructure.MassCentres.x;
+        this->last_y=newPosImgFrameStructure.MassCentres.y;
 
         this->lockThisIteration=true;
     }
@@ -69,14 +71,17 @@ void bubble::operator<<(cv::Rect newPosition){
 
 }
 
+
+
+
 void bubble::printAllXY(void){
 
     for (int i=0; i<this->KnownDescriptors.size(); i++){
-        std::cout<<"X: "<<this->KnownDescriptors[i].x<<" ";
+        std::cout<<"X: "<<this->KnownDescriptors[i].MassCentres.x<<" ";
     }
     std::cout<<"\n";
     for (int i=0; i<this->KnownDescriptors.size(); i++){
-        std::cout<<"Y: "<<this->KnownDescriptors[i].y<<" ";
+        std::cout<<"Y: "<<this->KnownDescriptors[i].MassCentres.y<<" ";
     }
     std::cout<<"\n";
 
@@ -96,7 +101,8 @@ bool bubble::isNewPositionProbable(int &x, int &y){
 float bubble::dZdT (void){
 
     int numFrames=this->KnownDescriptors.size();
-    float total_z=this->KnownDescriptors[0].x-this->KnownDescriptors[numFrames-1].x;
+    float total_z;
+    total_z=this->KnownDescriptors[0].newPosition.x-this->KnownDescriptors[numFrames-1].newPosition.x;
     return total_z/((float)numFrames-1.0);
 
 }
@@ -104,8 +110,8 @@ float bubble::dZdT (void){
 float bubble::dRdT(void){
 
     int numFrames=this->KnownDescriptors.size();
-    float dx=this->KnownDescriptors[0].width-this->KnownDescriptors[numFrames-1].width;
-    float dy=this->KnownDescriptors[0].height-this->KnownDescriptors[numFrames-1].height;
+    float dx=this->KnownDescriptors[0].newPosition.width-this->KnownDescriptors[numFrames-1].newPosition.width;
+    float dy=this->KnownDescriptors[0].newPosition.height-this->KnownDescriptors[numFrames-1].newPosition.height;
 
     float dr = sqrt(dx*dx+dy*dy);
     return dr/((float)numFrames-1.0);

@@ -55,6 +55,61 @@ bool eventNameOrderSort(std::string a, std::string b)
 }
 
 
+/*This is the same routine run serially on all cams. It was stupid to do the same ops 4 times,
+ *this simplifies the run*/
+
+int AnyCamAnalysis(std::string EventID, std::string ImgDir, int camera, bool nonStopPref, Trainer** TrainingData,
+                    OutputWriter** P60Output, std::string out_dir, int actualEventNumber, AnalyzerUnit** AGeneric){
+
+
+    OutputWriter* Pico60Writer = *P60Output;
+
+    //AnalyzerUnit *AnalyzerC0 = new L3Localizer(EventList[evi], imageDir, 0, true, &TrainC0); /*EventID, imageDir and camera number*/
+    //AnalyzerUnit *AnalyzerCGeneric = new L3Localizer(EventID, ImgDir, camera, true, TrainingData); /*EventID, imageDir and camera number*/
+    AnalyzerUnit *AnalyzerCGeneric = *AGeneric;
+
+
+    /* ***************************
+     * ***** Camera Operations ******
+     ********************************/
+
+    /*Exception handling - per camera*/
+    try
+    {
+        AnalyzerCGeneric->ParseAndSortFramesInFolder();
+        AnalyzerCGeneric->FindTriggerFrame();
+        //cout<<"Trigger Frame: "<<AnalyzerCGeneric->MatTrigFrame<<"\n";
+        if (AnalyzerCGeneric->okToProceed)
+        {
+
+            AnalyzerCGeneric->LocalizeOMatic(out_dir);  //uncomment for full run
+            if (AnalyzerCGeneric->okToProceed) Pico60Writer->stageCameraOutput(AnalyzerCGeneric->BubbleList, camera, AnalyzerCGeneric->MatTrigFrame, actualEventNumber);
+            else {
+                Pico60Writer->stageCameraOutputError(camera,-8, actualEventNumber);
+                }
+        }
+        else
+        {
+            Pico60Writer->stageCameraOutputError(camera,AnalyzerCGeneric->TriggerFrameIdentificationStatus, actualEventNumber);
+        }
+
+    /*The exception block for camera specific crashes. outputs -6 for the error*/
+    }
+    catch (exception& e)
+    {
+        std::cout << e.what() << '\n';
+        Pico60Writer->stageCameraOutputError(camera,-6, actualEventNumber);
+
+    }
+
+    //delete AnalyzerCGeneric;
+
+    advance_cursor(); /*Fancy coursors!*/
+    return 0;
+
+}
+
+
 /*The main autobub code starts here*/
 int main(int argc, char** argv)
 {
@@ -135,7 +190,7 @@ int main(int argc, char** argv)
 
 
 
-    printf("**Training complete. AutoBub is now in detect mode**\n");
+    printf("***Training complete. AutoBub is now in detect mode***\n");
 
 
     /*Detect mode
@@ -146,144 +201,32 @@ int main(int argc, char** argv)
     for (int evi = 0; evi < EventList.size(); evi++)
     {
         std::string imageDir=eventDir+EventList[evi]+"/Images/";
-        //std::cout<<"Processing event: "<<EventList[evi]<<" / "<<EventList.size()<<"\n";
-        printf("\rProcessing event: %s / %d  ... ", EventList[evi].c_str(), EventList.size()-1);
-        AnalyzerUnit *AnalyzerC0 = new L3Localizer(EventList[evi], imageDir, 0, true, &TrainC0); /*EventID, imageDir and camera number*/
-        AnalyzerUnit *AnalyzerC1 = new L3Localizer(EventList[evi], imageDir, 1, true, &TrainC1); /*EventID, imageDir and camera number*/
-        AnalyzerUnit *AnalyzerC2 = new L3Localizer(EventList[evi], imageDir, 2, true, &TrainC2); /*EventID, imageDir and camera number*/
-        AnalyzerUnit *AnalyzerC3 = new L3Localizer(EventList[evi], imageDir, 3, true, &TrainC3); /*EventID, imageDir and camera number*/
-
         /*We need the actual event number in case folders with events are missing*/
         int actualEventNumber = atoi(EventList[evi].c_str());
 
-        /*Fancy coursors!*/
-        advance_cursor();
+        printf("\rProcessing event: %s / %d  ... ", EventList[evi].c_str(), EventList.size()-1);
+        advance_cursor(); /*Fancy coursors!*/
 
 
         /* ***************************
-         * ***** Camera 0 Operations ******
+         * ***** Camera Operations ******
          ********************************/
+        AnalyzerUnit *AnalyzerC0 = new L3Localizer(EventList[evi], imageDir, 0, true, &TrainC0);
+        AnalyzerUnit *AnalyzerC1 = new L3Localizer(EventList[evi], imageDir, 1, true, &TrainC1);
+        AnalyzerUnit *AnalyzerC2 = new L3Localizer(EventList[evi], imageDir, 2, true, &TrainC2);
+        AnalyzerUnit *AnalyzerC3 = new L3Localizer(EventList[evi], imageDir, 3, true, &TrainC3);
 
-        /*Exception handling - per camera*/
-        try
-        {
-            AnalyzerC0->ParseAndSortFramesInFolder();
-            AnalyzerC0->FindTriggerFrame();
-            //cout<<"Trigger Frame: "<<AnalyzerC0->MatTrigFrame<<"\n";
-            if (AnalyzerC0->okToProceed)
-            {
-                AnalyzerC0->LocalizeOMatic(out_dir);  //uncomment for full run
-                if (AnalyzerC0->okToProceed) PICO60Output->stageCameraOutput(AnalyzerC0->BubbleList,0, AnalyzerC0->MatTrigFrame, actualEventNumber);
-                else PICO60Output->stageCameraOutputError(0,-8, actualEventNumber);
-            }
-            else
-            {
-                PICO60Output->stageCameraOutputError(0,AnalyzerC0->TriggerFrameIdentificationStatus, actualEventNumber);
-            }
 
-        /*The exception block for camera 0 specific crashes. outputs -6 for the error*/
-        }
-        catch (...)
-        {
-            PICO60Output->stageCameraOutputError(0,-6, actualEventNumber);
-        }
-
-        /*Fancy coursors!*/
-        advance_cursor();
-
-        /* ***************************
-         * ***** Camera 1 Operations ******
-         ********************************/
-        try
-        {
-            AnalyzerC1->ParseAndSortFramesInFolder();
-            AnalyzerC1->FindTriggerFrame();
-
-            if (AnalyzerC1->okToProceed)
-            {
-                AnalyzerC1->LocalizeOMatic(out_dir);  //uncomment for full run
-                if (AnalyzerC1->okToProceed) PICO60Output->stageCameraOutput(AnalyzerC1->BubbleList,1, AnalyzerC1->MatTrigFrame, actualEventNumber);
-                else PICO60Output->stageCameraOutputError(0,-8, actualEventNumber);
-            }
-            else
-            {
-                PICO60Output->stageCameraOutputError(1,AnalyzerC1->TriggerFrameIdentificationStatus, actualEventNumber);
-            }
-
-        /*The exception block for camera 1 specific crashes. outputs -6 for the error*/
-        }
-        catch (...)
-        {
-            PICO60Output->stageCameraOutputError(1,-6, actualEventNumber);
-        }
-        /*Fancy coursors!*/
-        advance_cursor();
-
-        /* ***************************
-         * ***** Camera 2 Operations ******
-         ********************************/
-        try
-        {
-            AnalyzerC2->ParseAndSortFramesInFolder();
-            AnalyzerC2->FindTriggerFrame();
-            //cout<<"Trigger Frame: "<<AnalyzerC2->MatTrigFrame<<"\n";
-            if (AnalyzerC2->okToProceed)
-            {
-                AnalyzerC2->LocalizeOMatic(out_dir);
-                if (AnalyzerC2->okToProceed) PICO60Output->stageCameraOutput(AnalyzerC2->BubbleList,2, AnalyzerC2->MatTrigFrame, actualEventNumber);
-                else PICO60Output->stageCameraOutputError(0,-8, actualEventNumber);
-            }
-            else
-            {
-                PICO60Output->stageCameraOutputError(2,AnalyzerC2->TriggerFrameIdentificationStatus, actualEventNumber);
-            }
-
-        /*The exception block for camera 2 specific crashes. outputs -6 for the error*/
-        }
-        catch (...)
-        {
-            PICO60Output->stageCameraOutputError(2,-6, actualEventNumber);
-        }
-
-        /*Fancy coursors!*/
-        advance_cursor();
-
-        /* ***************************
-         * ***** Camera 3 Operations ******
-         ********************************/
-        try
-        {
-
-            AnalyzerC3->ParseAndSortFramesInFolder();
-            AnalyzerC3->FindTriggerFrame();
-            //cout<<"Trigger Frame: "<<AnalyzerC3->MatTrigFrame<<"\n";
-            if (AnalyzerC3->okToProceed)
-            {
-                AnalyzerC3->LocalizeOMatic(out_dir);  //uncomment for full run
-                if (AnalyzerC3->okToProceed) PICO60Output->stageCameraOutput(AnalyzerC3->BubbleList,3, AnalyzerC3->MatTrigFrame, actualEventNumber);
-                else PICO60Output->stageCameraOutputError(0,-8, actualEventNumber);
-            }
-            else
-            {
-                PICO60Output->stageCameraOutputError(3,AnalyzerC3->TriggerFrameIdentificationStatus, actualEventNumber);
-            }
-
-        /*The exception block for camera 3 specific crashes. outputs -6 for the error*/
-        }
-        catch (...)
-        {
-            PICO60Output->stageCameraOutputError(3,-6, actualEventNumber);
-        }
-
-        /*Fancy coursors!*/
-        advance_cursor();
+        AnyCamAnalysis(EventList[evi], imageDir, 0, true, &TrainC0, &PICO60Output, out_dir, actualEventNumber, &AnalyzerC0);
+        AnyCamAnalysis(EventList[evi], imageDir, 1, true, &TrainC1, &PICO60Output, out_dir, actualEventNumber, &AnalyzerC1);
+        AnyCamAnalysis(EventList[evi], imageDir, 2, true, &TrainC2, &PICO60Output, out_dir, actualEventNumber, &AnalyzerC2);
+        AnyCamAnalysis(EventList[evi], imageDir, 3, true, &TrainC3, &PICO60Output, out_dir, actualEventNumber, &AnalyzerC3);
 
         /*Write and commit output after each iteration, so in the event of a crash, its not lost*/
         PICO60Output->writeCameraOutput();
-        delete AnalyzerC0;
-        delete AnalyzerC1;
-        delete AnalyzerC2;
-        delete AnalyzerC3;
+
+        delete AnalyzerC0, AnalyzerC1, AnalyzerC2, AnalyzerC3;
+
     }
 
     printf("run complete.\n");
