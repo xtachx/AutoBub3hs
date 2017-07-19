@@ -2,7 +2,7 @@
 <CodeBlocks_project_file>
 	<FileVersion major="1" minor="6" />
 	<Project>
-		<Option title="AutoBub3" />
+		<Option title="AutoBub3hs" />
 		<Option platforms="Unix;Mac;" />
 		<Option makefile_is_custom="1" />
 		<Option pch_mode="2" />

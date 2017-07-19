@@ -244,21 +244,33 @@ void L3Localizer::CalculateInitialBubbleParams(void )
     cv::findContours(overTheSigma, contours, CV_RETR_EXTERNAL, CV_CHAIN_APPROX_TC89_L1);
 
     /*Make two vectors to store the fitted rectanglse and ellipses*/
-    std::vector<cv::RotatedRect> minAreaRect( contours.size() );
+    //std::vector<cv::RotatedRect> minAreaRect( contours.size() );
     std::vector<cv::Rect> minRect( contours.size() );
 
     int BoxArea=0;
     /*Generate the ellipses and rectangles for each contours*/
     for( int i = 0; i < contours.size(); i++ ) {
         minRect[i] = cv::boundingRect( contours[i]);
+        //minAreaRect[i] = cv::minAreaRect(contours[i] );
+
         BoxArea = minRect[i].width*minRect[i].height;
         if (BoxArea>10){
             //std::cout<<" Bubble genesis              X: "<<minRect[i].x<<" Y: "<<minRect[i].y<<" W: "<<minRect[i].width<<" H: "<<minRect[i].height<<"\n";
             cv::rectangle(this->presentationFrame, minRect[i], this->color_red,1,8,0);
             this->bubbleRects.push_back(minRect[i]);
 
-            bubble* firstBubble = new bubble(minRect[i]);
+            BubbleImageFrame _thisBubbleFrame;
+            _thisBubbleFrame.ContArea = cv::contourArea(contours[i]);
+            _thisBubbleFrame.ContRadius = sqrt(_thisBubbleFrame.ContArea/3.14159);
+            _thisBubbleFrame.newPosition = minRect[i];
+            _thisBubbleFrame.moments = cv::moments(contours[i], false); /*second parameter is for a binary image*/
+            _thisBubbleFrame.MassCentres = cv::Point2f( _thisBubbleFrame.moments.m10/_thisBubbleFrame.moments.m00 ,
+                                                        _thisBubbleFrame.moments.m01/_thisBubbleFrame.moments.m00);
+
+            //bubble* firstBubble = new bubble(minAreaRect[i]);
+            bubble* firstBubble = new bubble(_thisBubbleFrame);
             this->BubbleList.push_back(firstBubble);
+
         }
 
     }
@@ -320,13 +332,16 @@ void L3Localizer::CalculateInitialBubbleParamsCam2(void )
     cv::findContours(bubMinusShadow, contours, CV_RETR_EXTERNAL, CV_CHAIN_APPROX_TC89_L1);
 
     /*Make two vectors to store the fitted rectanglse and ellipses*/
-    std::vector<cv::RotatedRect> minAreaRect( contours.size() );
+    //std::vector<cv::RotatedRect> minAreaRect( contours.size() );
     std::vector<cv::Rect> minRect( contours.size() );
+
+
 
     int BoxArea=0;
     /*Generate the ellipses and rectangles for each contours*/
     for( int i = 0; i < contours.size(); i++ ) {
         minRect[i] = cv::boundingRect( contours[i]);
+        //minAreaRect[i] = cv::minAreaRect(contours[i]);
         BoxArea = minRect[i].width*minRect[i].height;
 
         if (BoxArea>10){
@@ -334,8 +349,20 @@ void L3Localizer::CalculateInitialBubbleParamsCam2(void )
             cv::rectangle(this->presentationFrame, minRect[i], this->color_red,1,8,0);
             this->bubbleRects.push_back(minRect[i]);
 
-            bubble* firstBubble = new bubble(minRect[i]);
+            BubbleImageFrame _thisBubbleFrame;
+            _thisBubbleFrame.ContArea = cv::contourArea(contours[i]);
+            _thisBubbleFrame.ContRadius = sqrt(_thisBubbleFrame.ContArea/3.14159);
+            _thisBubbleFrame.newPosition = minRect[i];
+            _thisBubbleFrame.moments = cv::moments(contours[i], false); /*second parameter is for a binary image*/
+            _thisBubbleFrame.MassCentres = cv::Point2f( _thisBubbleFrame.moments.m10/_thisBubbleFrame.moments.m00 ,
+                                                        _thisBubbleFrame.moments.m01/_thisBubbleFrame.moments.m00);
+
+
+
+            //bubble* firstBubble = new bubble(minAreaRect[i]);
+            bubble* firstBubble = new bubble(_thisBubbleFrame);
             this->BubbleList.push_back(firstBubble);
+
         }
 
     }
@@ -361,7 +388,6 @@ void L3Localizer::CalculatePostTriggerFrameParamsCam2(int postTrigFrameNumber )
     this->PostTrigWorkingFrame = cv::imread(this->ImageDir + this->CameraFrames[this->MatTrigFrame+1+postTrigFrameNumber],0);
     //tempPresentation =  this->PostTrigWorkingFrame.clone();
     //cv::cvtColor(tempPresentation, tempPresentation, cv::COLOR_GRAY2BGR);
-
 
     /*Construct the frame differences. Note: Due to retroreflector, the bubbles are darker!*/
     cv::Mat NewFrameDiffTrig, overTheSigma, newFrameTrig;
@@ -396,21 +422,44 @@ void L3Localizer::CalculatePostTriggerFrameParamsCam2(int postTrigFrameNumber )
     cv::findContours(bubMinusShadow, contours, CV_RETR_EXTERNAL, CV_CHAIN_APPROX_TC89_L1);
 
     /*Make two vectors to store the fitted rectanglse and ellipses*/
-    std::vector<cv::RotatedRect> minAreaRect( contours.size() );
+    //std::vector<cv::RotatedRect> minAreaRect( contours.size() );
     std::vector<cv::Rect> minRect( contours.size() );
     std::vector<cv::Rect> newPositions;
+    std::vector<double> ContArea;
+    std::vector<cv::Moments> moments;
+    std::vector<cv::Point2f> MassCentres;
+
+    std::vector<BubbleImageFrame> BubbleTrackingPerFrames;
+
+
+
 
     int BoxArea=0;
     /*Generate the ellipses and rectangles for each contours*/
     for( int i = 0; i < contours.size(); i++ ) {
         minRect[i] = cv::boundingRect( contours[i]);
+        //minAreaRect[i] = cv::minAreaRect(contours[i]);
+
+
         BoxArea = minRect[i].width*minRect[i].height;
         if (BoxArea>10){
             //bubble* firstBubble = new bubble(minRect[i]);
             //cv::rectangle(tempPresentation, minRect[i], this->color_red,1,8,0);
             newPositions.push_back(minRect[i]);
+            BubbleImageFrame _thisBubbleFrame;
+            _thisBubbleFrame.ContArea = cv::contourArea(contours[i]);
+            _thisBubbleFrame.ContRadius = sqrt(_thisBubbleFrame.ContArea/3.14159);
+            _thisBubbleFrame.newPosition = minRect[i];
+            _thisBubbleFrame.moments = cv::moments(contours[i], false); /*second parameter is for a binary image*/
+            _thisBubbleFrame.MassCentres = cv::Point2f( _thisBubbleFrame.moments.m10/_thisBubbleFrame.moments.m00 ,
+                                                        _thisBubbleFrame.moments.m01/_thisBubbleFrame.moments.m00);
+
+            BubbleTrackingPerFrames.push_back(_thisBubbleFrame);
+
+
         }
     }
+
 
     /*UnLock the bubble descriptors*/
     for (int a=0; a<this->BubbleList.size(); a++){
@@ -418,16 +467,17 @@ void L3Localizer::CalculatePostTriggerFrameParamsCam2(int postTrigFrameNumber )
     }
 
     /*Match these with the global bubbles*/
-    for (int j=0; j<newPositions.size(); j++){
-        float _thisbubbleX=newPositions[j].x;
-        float _thisbubbleY=newPositions[j].y;
+    for (int j=0; j<BubbleTrackingPerFrames.size(); j++){
+        float _thisbubbleX=BubbleTrackingPerFrames[j].MassCentres.x;
+        float _thisbubbleY=BubbleTrackingPerFrames[j].MassCentres.y;
         /*look through all the global bubbles for a position*/
         for (int k=0; k<this->BubbleList.size(); k++){
             float _eval_bubble_X=this->BubbleList[k]->last_x;
             float _eval_bubble_Y=this->BubbleList[k]->last_y;
 
             if ((_eval_bubble_X-_thisbubbleX<5) && (fabs(_eval_bubble_Y-_thisbubbleY)<4)){
-                    *this->BubbleList[k]<<newPositions[j];
+                    *this->BubbleList[k]<<BubbleTrackingPerFrames[j];
+
                     break;
             }
         }
@@ -476,24 +526,43 @@ void L3Localizer::CalculatePostTriggerFrameParams(int postTrigFrameNumber){
     cv::findContours(overTheSigma, contours, CV_RETR_EXTERNAL, CV_CHAIN_APPROX_TC89_L1);
 
     /*Make two vectors to store the fitted rectanglse and ellipses*/
-    std::vector<cv::RotatedRect> minAreaRect( contours.size() );
+    //std::vector<cv::RotatedRect> minAreaRect( contours.size() );
     std::vector<cv::Rect> minRect( contours.size() );
     std::vector<cv::Rect> newPositions;
+
+
+    std::vector<BubbleImageFrame> BubbleTrackingPerFrames;
+
 
 
     int BoxArea=0;
     /*Generate the ellipses and rectangles for each contours*/
     for( int i = 0; i < contours.size(); i++ ) {
         minRect[i] = cv::boundingRect( contours[i]);
+        //minAreaRect[i] = cv::minAreaRect( contours[i] );
+
         BoxArea = minRect[i].width*minRect[i].height;
         if (BoxArea>10){
             //std::cout<<" Bubble progression step:"<<postTrigFrameNumber<<" | X: "<<minRect[i].x<<" Y: "<<minRect[i].y<<" W: "<<minRect[i].width<<" H: "<<minRect[i].height<<"\n";
             //cv::rectangle(tempPresentation, minRect[i], this->color_red,1,8,0);
             newPositions.push_back(minRect[i]);
+
+            BubbleImageFrame _thisBubbleFrame;
+            _thisBubbleFrame.ContArea = cv::contourArea(contours[i]);
+            _thisBubbleFrame.ContRadius = sqrt(_thisBubbleFrame.ContArea/3.14159);
+            _thisBubbleFrame.newPosition = minRect[i];
+            _thisBubbleFrame.moments = cv::moments(contours[i], false); /*second parameter is for a binary image*/
+            _thisBubbleFrame.MassCentres = cv::Point2f( _thisBubbleFrame.moments.m10/_thisBubbleFrame.moments.m00 ,
+                                                        _thisBubbleFrame.moments.m01/_thisBubbleFrame.moments.m00);
+
+            BubbleTrackingPerFrames.push_back(_thisBubbleFrame);
+
             //this->bubbleRects.push_back(minRect[i]);
         }
 
     }
+
+    //std::cout<<"Sizes, newPositions: "<<newPositions.size()<<" NewPos RR: "<<newPositionsRotatedRect.size()<<"\n";
 
 
     /*UnLock the bubble descriptors*/
@@ -502,16 +571,18 @@ void L3Localizer::CalculatePostTriggerFrameParams(int postTrigFrameNumber){
     }
 
     /*Match these with the global bubbles*/
-    for (int j=0; j<newPositions.size(); j++){
-        float _thisbubbleX=newPositions[j].x;
-        float _thisbubbleY=newPositions[j].y;
+    for (int j=0; j<BubbleTrackingPerFrames.size(); j++){
+        float _thisbubbleX=BubbleTrackingPerFrames[j].MassCentres.x;
+        float _thisbubbleY=BubbleTrackingPerFrames[j].MassCentres.y;
         /*look through all the global bubbles for a position*/
         for (int k=0; k<this->BubbleList.size(); k++){
             float _eval_bubble_X=this->BubbleList[k]->last_x;
             float _eval_bubble_Y=this->BubbleList[k]->last_y;
 
-            if ((_eval_bubble_X-_thisbubbleX<5) && (fabs(_eval_bubble_Y-_thisbubbleY)<4)){
-                    *this->BubbleList[k]<<newPositions[j];
+            if ((_eval_bubble_X-_thisbubbleX<5) && (fabs(_eval_bubble_Y-_thisbubbleY)<5)){
+
+                    //std::cout<<"Bubble adding with RR cen X"<<newPositionsRotatedRect[j].center.x<<" y "<<newPositionsRotatedRect[j].center.y<<"\n";
+                    *this->BubbleList[k]<<BubbleTrackingPerFrames[j];
                     break;
             }
         }
@@ -571,17 +642,30 @@ void L3Localizer::LocalizeOMatic(std::string imageStorePath)
     if (this->CameraNumber==2) {
         this->CalculateInitialBubbleParamsCam2();
 
-        for (int k=1; k<=NumFramesBubbleTrack; k++)
+
+        if (this->MatTrigFrame<29){
+            for (int k=1; k<=NumFramesBubbleTrack; k++)
             this->CalculatePostTriggerFrameParamsCam2(k);
+        } else {
+            for (int k=1; k<=(39-this->MatTrigFrame); k++)
+            this->CalculatePostTriggerFrameParamsCam2(k);
+
+        }
+
 
         //this->CalculatePostTriggerFrameParamsCam2(2);
         //this->CalculatePostTriggerFrameParamsCam2(3);
     } else {
         this->CalculateInitialBubbleParams();
 
-        for (int k=1; k<=NumFramesBubbleTrack; k++)
+        if (this->MatTrigFrame<29){
+            for (int k=1; k<=NumFramesBubbleTrack; k++)
+            this->CalculatePostTriggerFrameParams(k);
+        } else {
+            for (int k=1; k<=(39-this->MatTrigFrame); k++)
             this->CalculatePostTriggerFrameParams(k);
 
+        }
         //this->CalculatePostTriggerFrameParams(2);
         //this->CalculatePostTriggerFrameParams(3);
     }

@@ -19,6 +19,16 @@
 /*Includes*/
 #include <opencv2/opencv.hpp>
 
+struct BubbleImageFrame{
+
+    cv::Rect newPosition;
+    double ContArea;
+    double ContRadius;
+    cv::Moments moments;
+    cv::Point2f MassCentres;
+
+
+};
 
 /*Memory Allocations*/
 
@@ -35,16 +45,18 @@ class bubble{
 
     public:
         /*Constructor and deconstructor*/
-        bubble(cv::Rect );
+        bubble(BubbleImageFrame );
         ~bubble();
 
         /* cvRect describing the origin */
-        std::vector<cv::Rect> KnownDescriptors;
+        std::vector<BubbleImageFrame> KnownDescriptors;
 
         float last_x;
         float last_y;
 
         cv::Rect GenesisPosition;
+        cv::Point2f GenesisPositionCentroid;
+
 
         /*Bubble descriptions*/
         std::vector<float> dz;
@@ -64,7 +76,7 @@ class bubble{
         void printAllXY(void);
 
         /*A fancy bubble adding thing ;-) */
-        void operator << (cv::Rect );
+        void operator << (BubbleImageFrame );
 
 
 };
